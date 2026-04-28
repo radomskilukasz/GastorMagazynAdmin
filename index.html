@@ -11,9 +11,11 @@ body { font-family: Arial; background:#f3f4f6; padding:20px; }
 input,button { font-size:20px; padding:14px; margin:8px 0; width:100%; box-sizing:border-box; }
 button { background:#2563eb; color:white; border:none; border-radius:10px; cursor:pointer; font-weight:bold; }
 .danger { background:#dc2626; }
+.warning { background:#f97316; }
 .ok { color:green; font-weight:bold; }
 .bad { color:red; font-weight:bold; }
 .info { color:#2563eb; font-weight:bold; }
+hr { margin:28px 0; }
 </style>
 </head>
 
@@ -21,29 +23,29 @@ button { background:#2563eb; color:white; border:none; border-radius:10px; curso
 
 <div class="card" id="loginScreen">
   <h1>🔐 Panel administratora</h1>
-
   <input id="adminLogin" placeholder="login lub email">
   <input id="adminPassword" type="password" placeholder="hasło">
-
   <button id="loginButton">Zaloguj</button>
-
   <p id="loginStatus" class="info">Status: gotowy do logowania</p>
 </div>
 
 <div class="card hidden" id="adminPanel">
-  <h1>⚙️ Zarządzanie planem</h1>
+  <h1>⚙️ Panel administratora</h1>
   <p class="ok">✅ Zalogowano</p>
 
   <hr>
 
-  <h2>📥 Import CSV</h2>
-
+  <h2>📥 Import planu CSV</h2>
   <input type="file" id="fileInput">
-
   <button id="uploadButton">⬆️ Wgraj plan</button>
-  <button id="clearButton" class="danger">🧹 Wyczyść cały plan</button>
-
+  <button id="clearPlanButton" class="danger">🧹 Wyczyść cały plan</button>
   <p id="uploadStatus"></p>
+
+  <hr>
+
+  <h2>📊 Raporty / zapakowane torby</h2>
+  <button id="clearSessionsButton" class="warning">🗑️ Wyczyść zapakowane torby / raport</button>
+  <p id="sessionsStatus"></p>
 </div>
 
 <script>
@@ -54,15 +56,18 @@ const DOMAIN = "@pakowanie.local";
 let supabaseClient = null;
 
 function setLoginStatus(text, type = "info") {
-  const el = document.getElementById("loginStatus");
-  el.innerText = text;
-  el.className = type;
+  loginStatus.innerText = text;
+  loginStatus.className = type;
 }
 
 function setUploadStatus(text, type = "info") {
-  const el = document.getElementById("uploadStatus");
-  el.innerText = text;
-  el.className = type;
+  uploadStatus.innerText = text;
+  uploadStatus.className = type;
+}
+
+function setSessionsStatus(text, type = "info") {
+  sessionsStatus.innerText = text;
+  sessionsStatus.className = type;
 }
 
 function getEmail(loginValue) {
@@ -88,8 +93,8 @@ async function adminLogin() {
   try {
     setLoginStatus("⏳ Loguję...", "info");
 
-    const loginValue = document.getElementById("adminLogin").value;
-    const passwordValue = document.getElementById("adminPassword").value;
+    const loginValue = adminLoginInput.value;
+    const passwordValue = adminPassword.value;
     const email = getEmail(loginValue);
 
     if (!email) {
@@ -102,13 +107,8 @@ async function adminLogin() {
       return;
     }
 
-    if (!supabaseClient) {
-      setLoginStatus("❌ Supabase nie jest połączony.", "bad");
-      return;
-    }
-
     const { data, error } = await supabaseClient.auth.signInWithPassword({
-      email: email,
+      email,
       password: passwordValue
     });
 
@@ -119,16 +119,16 @@ async function adminLogin() {
 
     setLoginStatus("✅ Zalogowano jako: " + data.user.email, "ok");
 
-    document.getElementById("loginScreen").classList.add("hidden");
-    document.getElementById("adminPanel").classList.remove("hidden");
+    loginScreen.classList.add("hidden");
+    adminPanel.classList.remove("hidden");
 
   } catch (err) {
     setLoginStatus("❌ Błąd techniczny: " + err.message, "bad");
   }
 }
 
-async function clearTable() {
-  if (!confirm("Na pewno usunąć cały plan?")) return;
+async function clearPlan() {
+  if (!confirm("Na pewno usunąć cały plan pakowania?")) return;
 
   setUploadStatus("⏳ Czyszczę plan...", "info");
 
@@ -138,14 +138,35 @@ async function clearTable() {
     .neq("id", 0);
 
   if (error) {
-    setUploadStatus("❌ Błąd czyszczenia: " + error.message, "bad");
+    setUploadStatus("❌ Błąd czyszczenia planu: " + error.message, "bad");
   } else {
     setUploadStatus("✅ Plan wyczyszczony.", "ok");
   }
 }
 
+async function clearSessions() {
+  const firstConfirm = confirm("Na pewno usunąć wszystkie zapakowane torby z raportu?");
+  if (!firstConfirm) return;
+
+  const secondConfirm = confirm("To usunie historię pakowania z raportu. Kontynuować?");
+  if (!secondConfirm) return;
+
+  setSessionsStatus("⏳ Czyszczę zapakowane torby / raport...", "info");
+
+  const { error } = await supabaseClient
+    .from("packing_sessions")
+    .delete()
+    .neq("status", "__never_match__");
+
+  if (error) {
+    setSessionsStatus("❌ Błąd czyszczenia raportu: " + error.message, "bad");
+  } else {
+    setSessionsStatus("✅ Zapakowane torby / raport wyczyszczone.", "ok");
+  }
+}
+
 async function upload() {
-  const file = document.getElementById("fileInput").files[0];
+  const file = fileInput.files[0];
 
   if (!file) {
     setUploadStatus("❌ Wybierz plik CSV.", "bad");
@@ -211,15 +232,18 @@ window.addEventListener("DOMContentLoaded", () => {
   supabaseClient = window.supabase.createClient(PROJECT_URL, PUBLISHABLE_KEY);
   setLoginStatus("Status: gotowy do logowania", "info");
 
-  document.getElementById("loginButton").addEventListener("click", adminLogin);
-  document.getElementById("uploadButton").addEventListener("click", upload);
-  document.getElementById("clearButton").addEventListener("click", clearTable);
+  window.adminLoginInput = document.getElementById("adminLogin");
 
-  document.getElementById("adminLogin").addEventListener("keydown", e => {
-    if (e.key === "Enter") document.getElementById("adminPassword").focus();
+  loginButton.addEventListener("click", adminLogin);
+  uploadButton.addEventListener("click", upload);
+  clearPlanButton.addEventListener("click", clearPlan);
+  clearSessionsButton.addEventListener("click", clearSessions);
+
+  adminLogin.addEventListener("keydown", e => {
+    if (e.key === "Enter") adminPassword.focus();
   });
 
-  document.getElementById("adminPassword").addEventListener("keydown", e => {
+  adminPassword.addEventListener("keydown", e => {
     if (e.key === "Enter") adminLogin();
   });
 });
