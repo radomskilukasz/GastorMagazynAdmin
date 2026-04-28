@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<title>Panel administratora</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+body { font-family: Arial; background:#f3f4f6; padding:20px; }
+.card { background:white; padding:32px; border-radius:18px; max-width:700px; margin:40px auto; }
+.hidden { display:none !important; }
+input,button { font-size:20px; padding:14px; margin:8px 0; width:100%; box-sizing:border-box; }
+button { background:#2563eb; color:white; border:none; border-radius:10px; cursor:pointer; font-weight:bold; }
+.danger { background:#dc2626; }
+.ok { color:green; font-weight:bold; }
+.bad { color:red; font-weight:bold; }
+.info { color:#2563eb; font-weight:bold; }
+</style>
+</head>
+
+<body>
+
+<div class="card" id="loginScreen">
+  <h1>🔐 Panel administratora</h1>
+
+  <input id="adminLogin" placeholder="login lub email">
+  <input id="adminPassword" type="password" placeholder="hasło">
+
+  <button id="loginButton">Zaloguj</button>
+
+  <p id="loginStatus" class="info">Status: gotowy do logowania</p>
+</div>
+
+<div class="card hidden" id="adminPanel">
+  <h1>⚙️ Zarządzanie planem</h1>
+  <p class="ok">✅ Zalogowano</p>
+
+  <hr>
+
+  <h2>📥 Import CSV</h2>
+
+  <input type="file" id="fileInput">
+
+  <button id="uploadButton">⬆️ Wgraj plan</button>
+  <button id="clearButton" class="danger">🧹 Wyczyść cały plan</button>
+
+  <p id="uploadStatus"></p>
+</div>
+
+<script>
+const PROJECT_URL = "https://lanmmbpqxmenyjwvwpkt.supabase.co";
+const PUBLISHABLE_KEY = "sb_publishable_sYrinkI1u2zr9uXZwsERNg_HE0wQKsC";
+const DOMAIN = "@pakowanie.local";
+
+let supabaseClient = null;
+
+function setLoginStatus(text, type = "info") {
+  const el = document.getElementById("loginStatus");
+  el.innerText = text;
+  el.className = type;
+}
+
+function setUploadStatus(text, type = "info") {
+  const el = document.getElementById("uploadStatus");
+  el.innerText = text;
+  el.className = type;
+}
+
+function getEmail(loginValue) {
+  const value = String(loginValue || "").trim().toLowerCase();
+  if (!value) return "";
+  if (value.includes("@")) return value;
+  return value + DOMAIN;
+}
+
+function translateError(msg) {
+  const m = String(msg || "").toLowerCase();
+
+  if (m.includes("invalid login credentials")) return "Nieprawidłowy login lub hasło.";
+  if (m.includes("email not confirmed")) return "Konto nie zostało potwierdzone.";
+  if (m.includes("user not found")) return "Nieznany użytkownik.";
+  if (m.includes("invalid email")) return "Nieprawidłowy login lub email.";
+  if (m.includes("failed to fetch") || m.includes("network")) return "Brak połączenia z internetem lub Supabase.";
+
+  return msg || "Nieznany błąd.";
+}
+
+async function adminLogin() {
+  try {
+    setLoginStatus("⏳ Loguję...", "info");
+
+    const loginValue = document.getElementById("adminLogin").value;
+    const passwordValue = document.getElementById("adminPassword").value;
+    const email = getEmail(loginValue);
+
+    if (!email) {
+      setLoginStatus("❌ Wpisz login lub email.", "bad");
+      return;
+    }
+
+    if (!passwordValue) {
+      setLoginStatus("❌ Wpisz hasło.", "bad");
+      return;
+    }
+
+    if (!supabaseClient) {
+      setLoginStatus("❌ Supabase nie jest połączony.", "bad");
+      return;
+    }
+
+    const { data, error } = await supabaseClient.auth.signInWithPassword({
+      email: email,
+      password: passwordValue
+    });
+
+    if (error) {
+      setLoginStatus("❌ " + translateError(error.message), "bad");
+      return;
+    }
+
+    setLoginStatus("✅ Zalogowano jako: " + data.user.email, "ok");
+
+    document.getElementById("loginScreen").classList.add("hidden");
+    document.getElementById("adminPanel").classList.remove("hidden");
+
+  } catch (err) {
+    setLoginStatus("❌ Błąd techniczny: " + err.message, "bad");
+  }
+}
+
+async function clearTable() {
+  if (!confirm("Na pewno usunąć cały plan?")) return;
+
+  setUploadStatus("⏳ Czyszczę plan...", "info");
+
+  const { error } = await supabaseClient
+    .from("packing_plan")
+    .delete()
+    .neq("id", 0);
+
+  if (error) {
+    setUploadStatus("❌ Błąd czyszczenia: " + error.message, "bad");
+  } else {
+    setUploadStatus("✅ Plan wyczyszczony.", "ok");
+  }
+}
+
+async function upload() {
+  const file = document.getElementById("fileInput").files[0];
+
+  if (!file) {
+    setUploadStatus("❌ Wybierz plik CSV.", "bad");
+    return;
+  }
+
+  setUploadStatus("⏳ Czytam plik...", "info");
+
+  const text = await file.text();
+  const lines = text.split(/\r?\n/).filter(line => line.trim() !== "");
+
+  if (lines.length < 2) {
+    setUploadStatus("❌ Plik jest pusty albo nie ma danych.", "bad");
+    return;
+  }
+
+  const rows = lines.slice(1).map(line => line.split(";"));
+
+  const data = rows.map(r => ({
+    bag_qr: String(r[0] || "").trim(),
+    tray_qr: String(r[1] || "").trim(),
+    meal: String(r[2] || "").trim(),
+    code: String(r[3] || "").trim(),
+    size: String(r[4] || "").trim(),
+    dish_name: String(r[5] || "").trim()
+  })).filter(x => x.bag_qr && x.tray_qr);
+
+  if (!data.length) {
+    setUploadStatus("❌ Nie znaleziono poprawnych wierszy. Sprawdź kolejność kolumn.", "bad");
+    return;
+  }
+
+  setUploadStatus("⏳ Wysyłam dane: " + data.length + " rekordów...", "info");
+
+  const chunkSize = 500;
+  let inserted = 0;
+
+  for (let i = 0; i < data.length; i += chunkSize) {
+    const chunk = data.slice(i, i + chunkSize);
+
+    const { error } = await supabaseClient
+      .from("packing_plan")
+      .insert(chunk);
+
+    if (error) {
+      setUploadStatus("❌ Błąd importu po " + inserted + " rekordach: " + error.message, "bad");
+      return;
+    }
+
+    inserted += chunk.length;
+    setUploadStatus("⏳ Wgrano " + inserted + " / " + data.length + "...", "info");
+  }
+
+  setUploadStatus("✅ Plan załadowany: " + inserted + " rekordów.", "ok");
+}
+
+window.addEventListener("DOMContentLoaded", () => {
+  if (!window.supabase) {
+    setLoginStatus("❌ Biblioteka Supabase się nie wczytała. Sprawdź internet.", "bad");
+    return;
+  }
+
+  supabaseClient = window.supabase.createClient(PROJECT_URL, PUBLISHABLE_KEY);
+  setLoginStatus("Status: gotowy do logowania", "info");
+
+  document.getElementById("loginButton").addEventListener("click", adminLogin);
+  document.getElementById("uploadButton").addEventListener("click", upload);
+  document.getElementById("clearButton").addEventListener("click", clearTable);
+
+  document.getElementById("adminLogin").addEventListener("keydown", e => {
+    if (e.key === "Enter") document.getElementById("adminPassword").focus();
+  });
+
+  document.getElementById("adminPassword").addEventListener("keydown", e => {
+    if (e.key === "Enter") adminLogin();
+  });
+});
+</script>
+
+</body>
+</html>
