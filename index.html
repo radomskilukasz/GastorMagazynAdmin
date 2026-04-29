@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="pl">
 <head>
+<link rel="icon" type="image/png" sizes="32x32" href="logo-removebg-preview.png">
+<link rel="icon" type="image/png" sizes="16x16" href="logo-removebg-preview.png">
 <meta charset="UTF-8">
 <title>Panel administratora</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -130,6 +132,18 @@ button:hover {
   box-shadow:var(--shadow);
 }
 
+.loginLogo {
+  text-align:center;
+  margin-bottom:15px;
+}
+
+.loginLogo img {
+  width:90px;
+  height:auto;
+  display:block;
+  margin:0 auto;
+}
+
 .loginCard h1 {
   text-align:center;
   font-size:34px;
@@ -161,6 +175,18 @@ button:hover {
   background:#f9fafb;
   border:1px solid var(--border);
   min-height:48px;
+}
+
+.adminTitleWrap {
+  display:flex;
+  align-items:center;
+  gap:18px;
+}
+
+.adminLogo {
+  width:78px;
+  height:auto;
+  display:block;
 }
 
 .adminHeader {
@@ -287,6 +313,10 @@ button:hover {
 <body>
 
 <div class="loginCard" id="loginScreen">
+  <div class="loginLogo">
+    <img src="logo.png" alt="logo">
+  </div>
+
   <h1>🔐 Panel administratora</h1>
   <p class="loginSubtitle">Zaloguj się, aby zarządzać planem, raportami i rolami</p>
 
@@ -307,9 +337,12 @@ button:hover {
 <div class="pageShell hidden" id="adminPanel">
 
   <div class="adminHeader">
-    <div>
-      <h1>⚙️ Panel administratora</h1>
-      <p>Zarządzanie planem pakowania, raportami i dostępami użytkowników.</p>
+    <div class="adminTitleWrap">
+      <img src="logo.png" class="adminLogo" alt="logo">
+      <div>
+        <h1>⚙️ Panel administratora</h1>
+        <p>Zarządzanie planem pakowania, raportami i dostępami użytkowników.</p>
+      </div>
     </div>
     <div class="loginBadge">✅ Zalogowano</div>
   </div>
