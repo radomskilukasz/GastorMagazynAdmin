@@ -8,7 +8,7 @@
 body { font-family: Arial; background:#f3f4f6; padding:20px; }
 .card { background:white; padding:32px; border-radius:18px; max-width:700px; margin:40px auto; }
 .hidden { display:none !important; }
-input,button { font-size:20px; padding:14px; margin:8px 0; width:100%; box-sizing:border-box; }
+input,button,select { font-size:20px; padding:14px; margin:8px 0; width:100%; box-sizing:border-box; }
 button { background:#2563eb; color:white; border:none; border-radius:10px; cursor:pointer; font-weight:bold; }
 .danger { background:#dc2626; }
 .warning { background:#f97316; }
@@ -47,7 +47,21 @@ hr { margin:28px 0; }
   <button id="clearSessionsButton" class="warning">🗑️ Wyczyść zapakowane torby / raport</button>
   <p id="sessionsStatus"></p>
 </div>
+<hr>
 
+<h2>👥 Zarządzanie rolami</h2>
+
+<input id="roleUserLogin" placeholder="login lub email użytkownika">
+
+<select id="roleSelect">
+  <option value="worker">worker — pakowanie</option>
+  <option value="manager">manager — pakowanie + raport</option>
+  <option value="admin">admin — wszystko</option>
+</select>
+
+<button id="setRoleButton">💾 Nadaj rolę</button>
+
+<p id="roleStatus"></p>
 <script>
 const PROJECT_URL = "https://lanmmbpqxmenyjwvwpkt.supabase.co";
 const PUBLISHABLE_KEY = "sb_publishable_sYrinkI1u2zr9uXZwsERNg_HE0wQKsC";
@@ -86,14 +100,45 @@ function setSessionsStatus(text, type = "info") {
   sessionsStatus.innerText = text;
   sessionsStatus.className = type;
 }
-
+function setRoleStatus(text, type = "info") {
+  roleStatus.innerText = text;
+  roleStatus.className = type;
+}
 function getEmail(loginValue) {
   const value = String(loginValue || "").trim().toLowerCase();
   if (!value) return "";
   if (value.includes("@")) return value;
   return value + DOMAIN;
 }
+async function setUserRole() {
+  const loginValue = roleUserLogin.value.trim();
+  const role = roleSelect.value;
+  const email = getEmail(loginValue);
 
+  if (!email) {
+    setRoleStatus("❌ Wpisz login lub email użytkownika.", "bad");
+    return;
+  }
+
+  setRoleStatus("⏳ Nadaję rolę...", "info");
+
+  const { data, error } = await supabaseClient.rpc("set_user_role_by_email", {
+    user_email: email,
+    new_role: role
+  });
+
+  if (error) {
+    setRoleStatus("❌ Błąd: " + error.message, "bad");
+    return;
+  }
+
+  if (data !== "OK") {
+    setRoleStatus("❌ " + data, "bad");
+    return;
+  }
+
+  setRoleStatus("✅ Nadano rolę: " + role + " dla " + email, "ok");
+}
 function translateError(msg) {
   const m = String(msg || "").toLowerCase();
 
@@ -262,7 +307,7 @@ window.addEventListener("DOMContentLoaded", () => {
   uploadButton.addEventListener("click", upload);
   clearPlanButton.addEventListener("click", clearPlan);
   clearSessionsButton.addEventListener("click", clearSessions);
-
+  setRoleButton.addEventListener("click", setUserRole);
   adminLogin.addEventListener("keydown", e => {
     if (e.key === "Enter") adminPassword.focus();
   });
