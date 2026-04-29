@@ -391,7 +391,8 @@ button:hover {
 
       <div class="actionStack">
         <div class="roleBox">
-          <input id="roleUserLogin" placeholder="login lub email użytkownika">
+          <input id="roleUserLogin" list="usersList" placeholder="login lub email użytkownika">
+          <datalist id="usersList"></datalist>
           <select id="roleSelect">
             <option value="worker">worker — pakowanie</option>
             <option value="manager">manager — pakowanie + raport</option>
@@ -460,6 +461,23 @@ function getEmail(loginValue) {
   return value + DOMAIN;
 }
 
+async function loadUsersList() {
+  const list = el("usersList");
+  if (!list) return;
+
+  const { data, error } = await supabaseClient.rpc("list_auth_users_for_admin");
+
+  if (error) {
+    setRoleStatus("⚠️ Nie udało się pobrać listy użytkowników: " + error.message, "bad");
+    return;
+  }
+
+  list.innerHTML = (data || []).map(row => {
+    const email = row.email || "";
+    return `<option value="${escapeHtml(email)}"></option>`;
+  }).join("");
+}
+
 async function setUserRole() {
   const loginValue = el("roleUserLogin").value.trim();
   const role = el("roleSelect").value;
@@ -488,6 +506,16 @@ async function setUserRole() {
   }
 
   setRoleStatus("✅ Nadano rolę: " + role + " dla " + email, "ok");
+}
+
+function escapeHtml(value) {
+  return String(value ?? "").replace(/[&<>"']/g, m => ({
+    "&":"&amp;",
+    "<":"&lt;",
+    ">":"&gt;",
+    '"':"&quot;",
+    "'":"&#039;"
+  }[m]));
 }
 
 function translateError(msg) {
@@ -541,6 +569,7 @@ async function adminLogin() {
 
     el("loginScreen").classList.add("hidden");
     el("adminPanel").classList.remove("hidden");
+    await loadUsersList();
 
   } catch (err) {
     setLoginStatus("❌ Błąd techniczny: " + err.message, "bad");
