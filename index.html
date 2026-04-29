@@ -52,6 +52,23 @@ hr { margin:28px 0; }
 const PROJECT_URL = "https://lanmmbpqxmenyjwvwpkt.supabase.co";
 const PUBLISHABLE_KEY = "sb_publishable_sYrinkI1u2zr9uXZwsERNg_HE0wQKsC";
 const DOMAIN = "@pakowanie.local";
+  async function getUserRole(userId) {
+  const { data, error } = await supabaseClient
+    .from("user_roles")
+    .select("role")
+    .eq("user_id", userId)
+    .single();
+
+  if (error || !data) {
+    return null;
+  }
+
+  return data.role;
+}
+
+function hasAccess(role, allowedRoles) {
+  return allowedRoles.includes(role);
+}
 
 let supabaseClient = null;
 
@@ -117,10 +134,17 @@ async function adminLogin() {
       return;
     }
 
-    setLoginStatus("✅ Zalogowano jako: " + data.user.email, "ok");
+    const role = await getUserRole(data.user.id);
 
-    loginScreen.classList.add("hidden");
-    adminPanel.classList.remove("hidden");
+if (!hasAccess(role, ["admin"])) {
+  setLoginStatus("❌ Brak dostępu do panelu administratora.", "bad");
+  return;
+}
+
+setLoginStatus("✅ Zalogowano jako: " + data.user.email, "ok");
+
+loginScreen.classList.add("hidden");
+adminPanel.classList.remove("hidden");
 
   } catch (err) {
     setLoginStatus("❌ Błąd techniczny: " + err.message, "bad");
