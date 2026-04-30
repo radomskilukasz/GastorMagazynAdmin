@@ -4,6 +4,7 @@
 <link rel="icon" type="image/png" sizes="32x32" href="logo-removebg-preview.png">
 <link rel="icon" type="image/png" sizes="16x16" href="logo-removebg-preview.png">
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Panel administratora</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
@@ -15,77 +16,92 @@
   --text:#111827;
   --muted:#6b7280;
   --border:#e5e7eb;
+  --border-dark:#d1d5db;
   --blue:#2563eb;
   --blue-dark:#1d4ed8;
+  --blue-soft:#eff6ff;
   --green:#16a34a;
+  --green-soft:#dcfce7;
   --red:#dc2626;
+  --red-dark:#b91c1c;
+  --red-soft:#fee2e2;
   --orange:#f97316;
-  --shadow:0 10px 35px rgba(15,23,42,.08);
+  --orange-dark:#ea580c;
+  --orange-soft:#fff7ed;
+  --dark:#111827;
+  --dark-hover:#030712;
+  --shadow:0 14px 45px rgba(15,23,42,.09);
+  --shadow-soft:0 8px 25px rgba(15,23,42,.06);
 }
 
 * { box-sizing:border-box; }
 
 body {
   font-family:Arial, sans-serif;
-  background:var(--bg);
+  background:
+    radial-gradient(circle at top left, rgba(37,99,235,.10), transparent 34%),
+    linear-gradient(180deg, #f8fafc 0%, var(--bg) 100%);
   margin:0;
   padding:24px;
   color:var(--text);
+  min-height:100vh;
 }
 
 .hidden { display:none !important; }
-h1, h2, p { margin-top:0; }
+h1, h2, h3, p { margin-top:0; }
 button, input, select { font-family:inherit; }
+
+button {
+  width:100%;
+  min-height:54px;
+  font-size:18px;
+  padding:15px 18px;
+  border:none;
+  border-radius:16px;
+  cursor:pointer;
+  font-weight:800;
+  background:var(--blue);
+  color:white;
+  transition:.15s ease;
+  box-shadow:0 8px 18px rgba(37,99,235,.18);
+}
+
+button:hover { background:var(--blue-dark); transform:translateY(-1px); }
+button:active { transform:translateY(0); }
+button:disabled { opacity:.6; cursor:not-allowed; transform:none; }
 
 input, select {
   width:100%;
-  font-size:20px;
-  padding:15px;
-  border-radius:14px;
-  border:2px solid #d1d5db;
+  min-height:54px;
+  font-size:18px;
+  padding:15px 16px;
+  border-radius:16px;
+  border:2px solid var(--border-dark);
   background:white;
   margin:0;
+  color:var(--text);
 }
 
 input:focus, select:focus {
   outline:none;
   border-color:var(--blue);
-  box-shadow:0 0 0 4px rgba(37,99,235,.15);
+  box-shadow:0 0 0 4px rgba(37,99,235,.14);
 }
 
-button {
-  width:100%;
-  font-size:20px;
-  padding:16px;
-  border:none;
-  border-radius:14px;
-  cursor:pointer;
-  font-weight:bold;
-  background:var(--blue);
-  color:white;
-  transition:.15s ease;
-}
+input::placeholder { color:#9ca3af; }
 
-button:hover { background:var(--blue-dark); }
-button:disabled { opacity:.6; cursor:not-allowed; }
-
-.danger { background:var(--red); }
-.danger:hover { background:#b91c1c; }
-.warning { background:var(--orange); }
-.warning:hover { background:#ea580c; }
-.darkBtn { background:#111827; }
-.darkBtn:hover { background:#030712; }
+.danger { background:var(--red); box-shadow:0 8px 18px rgba(220,38,38,.16); }
+.danger:hover { background:var(--red-dark); }
+.warning { background:var(--orange); box-shadow:0 8px 18px rgba(249,115,22,.16); }
+.warning:hover { background:var(--orange-dark); }
+.darkBtn { background:var(--dark); box-shadow:0 8px 18px rgba(17,24,39,.16); }
+.darkBtn:hover { background:var(--dark-hover); }
 .ok { color:var(--green); font-weight:bold; }
 .bad { color:var(--red); font-weight:bold; }
 .info { color:var(--blue); font-weight:bold; }
 .muted { color:var(--muted); }
 
-.pageShell {
-  width:100%;
-  max-width:1180px;
-  margin:0 auto;
-}
-
+/* LOGIN — spójny z resztą stron */
 .loginCard {
   background:white;
   padding:36px;
@@ -94,70 +110,135 @@ button:disabled { opacity:.6; cursor:not-allowed; }
   max-width:520px;
   margin:40px auto;
   box-shadow:var(--shadow);
+  box-sizing:border-box;
 }
 
 .loginLogo { text-align:center; margin-bottom:15px; }
 .loginLogo img { width:90px; height:auto; display:block; margin:0 auto; }
-.loginCard h1 { text-align:center; font-size:34px; margin-bottom:8px; }
-.loginSubtitle { text-align:center; color:var(--muted); font-size:17px; margin-bottom:28px; }
-
-.formGroup { margin-bottom:16px; }
-.formGroup label { display:block; font-weight:bold; margin-bottom:7px; color:#374151; }
+.loginCard h1 { text-align:center; margin:0; font-size:32px; }
+.loginSubtitle { text-align:center; color:var(--muted); margin-bottom:28px; line-height:1.4; }
+.loginCard label { display:block; font-weight:bold; margin-top:16px; margin-bottom:6px; }
+.loginInput, .loginCard input {
+  width:100%;
+  font-size:22px;
+  padding:14px;
+  border-radius:12px;
+  border:2px solid #d1d5db;
+  box-sizing:border-box;
+}
+.loginInput:focus, .loginCard input:focus { outline:none; border-color:#2563eb; }
+.loginBtn, #loginButton {
+  width:100%;
+  margin-top:24px;
+  font-size:24px;
+  padding:16px;
+  border-radius:14px;
+  border:none;
+  background:#2563eb;
+  color:white;
+  font-weight:bold;
+}
 
 .statusBox {
-  margin-top:18px;
-  padding:13px 15px;
-  border-radius:14px;
+  margin-top:16px;
+  padding:14px 16px;
+  border-radius:16px;
   background:#f9fafb;
   border:1px solid var(--border);
-  min-height:48px;
+  min-height:50px;
   line-height:1.35;
+  font-size:15px;
+}
+
+.statusBox.ok {
+  background:var(--green-soft);
+  border-color:#bbf7d0;
+  color:#166534;
+}
+
+.statusBox.bad {
+  background:var(--red-soft);
+  border-color:#fecaca;
+  color:#991b1b;
+}
+
+.statusBox.info {
+  background:var(--blue-soft);
+  border-color:#bfdbfe;
+  color:#1d4ed8;
+}
+
+/* PANEL */
+.pageShell {
+  width:100%;
+  max-width:1320px;
+  margin:0 auto;
+}
+
+.adminHeader {
+  background:white;
+  border-radius:30px;
+  padding:26px 30px;
+  box-shadow:var(--shadow);
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:22px;
+  margin-bottom:22px;
+  border:1px solid rgba(255,255,255,.75);
 }
 
 .adminTitleWrap {
   display:flex;
   align-items:center;
   gap:18px;
+  min-width:0;
 }
 
-.adminLogo { width:78px; height:auto; display:block; }
-
-.adminHeader {
-  background:white;
-  border-radius:26px;
-  padding:26px 30px;
-  box-shadow:var(--shadow);
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:20px;
-  margin-bottom:20px;
+.adminLogo {
+  width:78px;
+  height:auto;
+  display:block;
+  flex:0 0 auto;
 }
 
-.adminHeader h1 { font-size:38px; margin:0; letter-spacing:-.03em; }
-.adminHeader p { margin:6px 0 0; color:var(--muted); }
+.adminHeader h1 {
+  font-size:38px;
+  margin:0;
+  letter-spacing:-.04em;
+  line-height:1.05;
+}
+
+.adminHeader p {
+  margin:7px 0 0;
+  color:var(--muted);
+  line-height:1.4;
+}
 
 .loginBadge {
-  background:#dcfce7;
+  background:var(--green-soft);
   color:#166534;
   padding:12px 16px;
   border-radius:999px;
-  font-weight:bold;
+  font-weight:800;
   white-space:nowrap;
+  border:1px solid #bbf7d0;
 }
 
 .adminGrid {
   display:grid;
-  grid-template-columns:1fr 1fr;
+  grid-template-columns:1.05fr .95fr;
   gap:20px;
+  align-items:start;
 }
 
 .adminSection {
   background:white;
-  padding:26px;
-  border-radius:24px;
-  box-shadow:var(--shadow);
-  border:1px solid rgba(255,255,255,.7);
+  padding:0;
+  border-radius:28px;
+  box-shadow:var(--shadow-soft);
+  border:1px solid rgba(255,255,255,.8);
+  overflow:hidden;
 }
 
 .adminSection.fullWidth { grid-column:1 / -1; }
@@ -167,16 +248,41 @@ button:disabled { opacity:.6; cursor:not-allowed; }
   align-items:flex-start;
   justify-content:space-between;
   gap:14px;
-  margin-bottom:22px;
+  padding:24px 26px 18px;
+  border-bottom:1px solid var(--border);
+  background:linear-gradient(180deg, #ffffff 0%, #f9fafb 100%);
 }
 
-.sectionHeader h2 { margin:0; font-size:26px; }
-.sectionHint { color:var(--muted); font-size:15px; margin-top:6px; line-height:1.4; }
+.sectionHeader h2 {
+  margin:0;
+  font-size:25px;
+  letter-spacing:-.02em;
+}
+
+.sectionHint {
+  color:var(--muted);
+  font-size:15px;
+  margin-top:7px;
+  line-height:1.45;
+}
+
+.sectionBody {
+  padding:24px 26px 26px;
+}
+
+.formGroup { margin-bottom:16px; }
+.formGroup label {
+  display:block;
+  font-weight:800;
+  margin-bottom:8px;
+  color:#374151;
+  font-size:15px;
+}
 
 .actionStack {
   display:flex;
   flex-direction:column;
-  gap:12px;
+  gap:14px;
 }
 
 .buttonRow {
@@ -185,48 +291,70 @@ button:disabled { opacity:.6; cursor:not-allowed; }
   gap:12px;
 }
 
-.buttonRow.three {
-  grid-template-columns:1fr 1fr 1fr;
-}
-
 .fileInput {
   padding:13px;
   background:#f9fafb;
+  cursor:pointer;
 }
 
 .roleBox,
 .userBox {
   display:grid;
-  grid-template-columns:1fr 280px;
+  grid-template-columns:minmax(0,1fr) 280px;
   gap:12px;
 }
 
 .userCreateBox {
   display:grid;
-  grid-template-columns:1fr 1fr 240px;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr) 230px;
   gap:12px;
 }
 
 .divider {
   height:1px;
   background:var(--border);
-  margin:8px 0;
+  margin:4px 0;
 }
 
-@media(max-width:900px){
+.subPanel {
+  background:#f9fafb;
+  border:1px solid var(--border);
+  border-radius:22px;
+  padding:18px;
+}
+
+.subPanelTitle {
+  font-size:18px;
+  font-weight:900;
+  margin:0 0 12px;
+  color:#111827;
+}
+
+.adminTip {
+  background:var(--blue-soft);
+  border:1px solid #bfdbfe;
+  color:#1e40af;
+  padding:13px 15px;
+  border-radius:16px;
+  font-size:14px;
+  line-height:1.45;
+}
+
+@media(max-width:1000px){
   body { padding:14px; }
 
   .adminHeader {
     flex-direction:column;
     align-items:flex-start;
     padding:22px;
+    border-radius:24px;
   }
 
   .adminHeader h1 { font-size:30px; }
+  .adminLogo { width:64px; }
 
   .adminGrid,
   .buttonRow,
-  .buttonRow.three,
   .roleBox,
   .userBox,
   .userCreateBox {
@@ -234,6 +362,7 @@ button:disabled { opacity:.6; cursor:not-allowed; }
   }
 
   .adminSection.fullWidth { grid-column:auto; }
+  .sectionHeader, .sectionBody { padding-left:20px; padding-right:20px; }
 }
 </style>
 </head>
@@ -245,20 +374,16 @@ button:disabled { opacity:.6; cursor:not-allowed; }
     <img src="logo.png" alt="logo">
   </div>
 
-  <h1>🔐 Panel administratora</h1>
-  <p class="loginSubtitle">Zaloguj się, aby zarządzać planem, raportami i rolami</p>
+  <h1>Panel administratora</h1>
+  <p class="loginSubtitle">Zaloguj się, aby zarządzać planem, raportami i użytkownikami</p>
 
-  <div class="formGroup">
-    <label>Login lub email</label>
-    <input id="adminLogin" placeholder="np. JanKowalski">
-  </div>
+  <label>Login lub email</label>
+  <input id="adminLogin" class="loginInput" placeholder="np. JanKowalski">
 
-  <div class="formGroup">
-    <label>Hasło</label>
-    <input id="adminPassword" type="password" placeholder="Wpisz hasło">
-  </div>
+  <label>Hasło</label>
+  <input id="adminPassword" class="loginInput" type="password" placeholder="Wpisz hasło">
 
-  <button id="loginButton">Zaloguj</button>
+  <button id="loginButton" class="loginBtn">Zaloguj</button>
   <p id="loginStatus" class="statusBox info">Status: gotowy do logowania</p>
 </div>
 
@@ -268,8 +393,8 @@ button:disabled { opacity:.6; cursor:not-allowed; }
     <div class="adminTitleWrap">
       <img src="logo.png" class="adminLogo" alt="logo">
       <div>
-        <h1>⚙️ Panel administratora</h1>
-        <p>Zarządzanie planem pakowania, raportami i dostępami użytkowników.</p>
+        <h1>Panel administratora</h1>
+        <p>Zarządzanie planem, raportami i dostępami użytkowników.</p>
       </div>
     </div>
     <div class="loginBadge">✅ Zalogowano</div>
@@ -281,24 +406,29 @@ button:disabled { opacity:.6; cursor:not-allowed; }
       <div class="sectionHeader">
         <div>
           <h2>📥 Import planu CSV</h2>
-          <div class="sectionHint">Wgraj nowy plan pakowania z pliku CSV.</div>
+          <div class="sectionHint">Wgraj nowy plan pakowania i ustaw dzień jedzony widoczny w raportach.</div>
         </div>
       </div>
 
-      <div class="actionStack">
-        <div class="formGroup">
-          <label>Dzień jedzony</label>
-          <input type="date" id="mealDateInput">
+      <div class="sectionBody">
+        <div class="actionStack">
+          <div class="formGroup">
+            <label>Dzień jedzony</label>
+            <input type="date" id="mealDateInput">
+          </div>
+
+          <div class="formGroup">
+            <label>Plik CSV</label>
+            <input type="file" id="fileInput" class="fileInput" accept=".csv,text/csv">
+          </div>
+
+          <div class="buttonRow">
+            <button id="uploadButton">⬆️ Wgraj plan</button>
+            <button id="clearPlanButton" class="danger">🧹 Wyczyść plan</button>
+          </div>
+
+          <p id="uploadStatus" class="statusBox"></p>
         </div>
-
-        <input type="file" id="fileInput" class="fileInput" accept=".csv,text/csv">
-
-        <div class="buttonRow">
-          <button id="uploadButton">⬆️ Wgraj plan</button>
-          <button id="clearPlanButton" class="danger">🧹 Wyczyść plan</button>
-        </div>
-
-        <p id="uploadStatus" class="statusBox"></p>
       </div>
     </section>
 
@@ -306,37 +436,41 @@ button:disabled { opacity:.6; cursor:not-allowed; }
       <div class="sectionHeader">
         <div>
           <h2>📊 Raporty</h2>
-          <div class="sectionHint">Eksportuj raport lub usuń historię zapakowanych toreb.</div>
+          <div class="sectionHint">Eksportuj raport Excel lub usuń historię zapakowanych toreb.</div>
         </div>
       </div>
 
-      <div class="actionStack">
-        <button id="exportReportButton" class="darkBtn">📤 Eksport Excel / Generuj raport</button>
-        <button id="clearSessionsButton" class="warning">🗑️ Wyczyść zapakowane torby / raport</button>
-        <p id="sessionsStatus" class="statusBox"></p>
+      <div class="sectionBody">
+        <div class="actionStack">
+          <button id="exportReportButton" class="darkBtn">📤 Eksport Excel / Generuj raport</button>
+          <button id="clearSessionsButton" class="warning">🗑️ Wyczyść zapakowane torby / raport</button>
+          <p id="sessionsStatus" class="statusBox"></p>
+        </div>
       </div>
     </section>
 
     <section class="adminSection fullWidth">
       <div class="sectionHeader">
         <div>
-          <h2>👥 Zarządzanie rolami</h2>
-          <div class="sectionHint">Nadaj użytkownikowi dostęp do pakowania, raportu lub całego panelu.</div>
+          <h2>👥 Dostępy i role</h2>
+          <div class="sectionHint">Nadaj istniejącemu użytkownikowi rolę: pakowanie, raport lub pełny panel administratora.</div>
         </div>
       </div>
 
-      <div class="actionStack">
-        <div class="roleBox">
-          <input id="roleUserLogin" list="usersList" placeholder="login lub email użytkownika">
-          <datalist id="usersList"></datalist>
-          <select id="roleSelect">
-            <option value="worker">worker — pakowanie</option>
-            <option value="manager">manager — pakowanie + raport</option>
-            <option value="admin">admin — wszystko</option>
-          </select>
+      <div class="sectionBody">
+        <div class="actionStack">
+          <div class="roleBox">
+            <input id="roleUserLogin" list="usersList" placeholder="login lub email użytkownika">
+            <datalist id="usersList"></datalist>
+            <select id="roleSelect">
+              <option value="worker">worker — pakowanie</option>
+              <option value="manager">manager — pakowanie + raport</option>
+              <option value="admin">admin — wszystko</option>
+            </select>
+          </div>
+          <button id="setRoleButton">💾 Nadaj rolę</button>
+          <p id="roleStatus" class="statusBox"></p>
         </div>
-        <button id="setRoleButton">💾 Nadaj rolę</button>
-        <p id="roleStatus" class="statusBox"></p>
       </div>
     </section>
 
@@ -344,30 +478,42 @@ button:disabled { opacity:.6; cursor:not-allowed; }
       <div class="sectionHeader">
         <div>
           <h2>➕ Użytkownicy</h2>
-          <div class="sectionHint">Dodawanie i usuwanie użytkowników wymaga Edge Functions z kluczem service role po stronie Supabase.</div>
+          <div class="sectionHint">Twórz nowe konta i usuwaj użytkowników bez wchodzenia do Supabase.</div>
         </div>
       </div>
 
-      <div class="actionStack">
-        <div class="userCreateBox">
-          <input id="newUserLogin" placeholder="nowy login lub email">
-          <input id="newUserPassword" type="password" placeholder="hasło dla użytkownika">
-          <select id="newUserRole">
-            <option value="worker">worker</option>
-            <option value="manager">manager</option>
-            <option value="admin">admin</option>
-          </select>
+      <div class="sectionBody">
+        <div class="actionStack">
+          <div class="subPanel">
+            <h3 class="subPanelTitle">Dodaj nowego użytkownika</h3>
+            <div class="userCreateBox">
+              <input id="newUserLogin" placeholder="nowy login lub email">
+              <input id="newUserPassword" type="password" placeholder="hasło dla użytkownika">
+              <select id="newUserRole">
+                <option value="worker">worker</option>
+                <option value="manager">manager</option>
+                <option value="admin">admin</option>
+              </select>
+            </div>
+            <div style="margin-top:12px;">
+              <button id="createUserButton">➕ Dodaj użytkownika</button>
+            </div>
+          </div>
+
+          <div class="subPanel">
+            <h3 class="subPanelTitle">Usuń użytkownika</h3>
+            <div class="userBox">
+              <input id="deleteUserLogin" list="usersList" placeholder="login lub email do usunięcia">
+              <button id="deleteUserButton" class="danger">🗑️ Usuń użytkownika</button>
+            </div>
+          </div>
+
+          <div class="adminTip">
+            Dodawanie i usuwanie użytkowników działa przez Edge Functions po stronie Supabase. Klucz service role nie znajduje się w tym pliku HTML.
+          </div>
+
+          <p id="userStatus" class="statusBox"></p>
         </div>
-        <button id="createUserButton">➕ Dodaj użytkownika</button>
-
-        <div class="divider"></div>
-
-        <div class="userBox">
-          <input id="deleteUserLogin" list="usersList" placeholder="login lub email do usunięcia">
-          <button id="deleteUserButton" class="danger">🗑️ Usuń użytkownika</button>
-        </div>
-
-        <p id="userStatus" class="statusBox"></p>
       </div>
     </section>
 
