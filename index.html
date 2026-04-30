@@ -6,6 +6,7 @@
 <meta charset="UTF-8">
 <title>Panel administratora</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
 <style>
 :root {
@@ -22,9 +23,7 @@
   --shadow:0 10px 35px rgba(15,23,42,.08);
 }
 
-* {
-  box-sizing:border-box;
-}
+* { box-sizing:border-box; }
 
 body {
   font-family:Arial, sans-serif;
@@ -34,24 +33,11 @@ body {
   color:var(--text);
 }
 
-.hidden {
-  display:none !important;
-}
+.hidden { display:none !important; }
+h1, h2, p { margin-top:0; }
+button, input, select { font-family:inherit; }
 
-h1,
-h2,
-p {
-  margin-top:0;
-}
-
-button,
-input,
-select {
-  font-family:inherit;
-}
-
-input,
-select {
+input, select {
   width:100%;
   font-size:20px;
   padding:15px;
@@ -61,8 +47,7 @@ select {
   margin:0;
 }
 
-input:focus,
-select:focus {
+input:focus, select:focus {
   outline:none;
   border-color:var(--blue);
   box-shadow:0 0 0 4px rgba(37,99,235,.15);
@@ -81,40 +66,19 @@ button {
   transition:.15s ease;
 }
 
-button:hover {
-  background:var(--blue-dark);
-}
+button:hover { background:var(--blue-dark); }
+button:disabled { opacity:.6; cursor:not-allowed; }
 
-.danger {
-  background:var(--red);
-}
-
-.danger:hover {
-  background:#b91c1c;
-}
-
-.warning {
-  background:var(--orange);
-}
-
-.warning:hover {
-  background:#ea580c;
-}
-
-.ok {
-  color:var(--green);
-  font-weight:bold;
-}
-
-.bad {
-  color:var(--red);
-  font-weight:bold;
-}
-
-.info {
-  color:var(--blue);
-  font-weight:bold;
-}
+.danger { background:var(--red); }
+.danger:hover { background:#b91c1c; }
+.warning { background:var(--orange); }
+.warning:hover { background:#ea580c; }
+.darkBtn { background:#111827; }
+.darkBtn:hover { background:#030712; }
+.ok { color:var(--green); font-weight:bold; }
+.bad { color:var(--red); font-weight:bold; }
+.info { color:var(--blue); font-weight:bold; }
+.muted { color:var(--muted); }
 
 .pageShell {
   width:100%;
@@ -132,41 +96,13 @@ button:hover {
   box-shadow:var(--shadow);
 }
 
-.loginLogo {
-  text-align:center;
-  margin-bottom:15px;
-}
+.loginLogo { text-align:center; margin-bottom:15px; }
+.loginLogo img { width:90px; height:auto; display:block; margin:0 auto; }
+.loginCard h1 { text-align:center; font-size:34px; margin-bottom:8px; }
+.loginSubtitle { text-align:center; color:var(--muted); font-size:17px; margin-bottom:28px; }
 
-.loginLogo img {
-  width:90px;
-  height:auto;
-  display:block;
-  margin:0 auto;
-}
-
-.loginCard h1 {
-  text-align:center;
-  font-size:34px;
-  margin-bottom:8px;
-}
-
-.loginSubtitle {
-  text-align:center;
-  color:var(--muted);
-  font-size:17px;
-  margin-bottom:28px;
-}
-
-.formGroup {
-  margin-bottom:16px;
-}
-
-.formGroup label {
-  display:block;
-  font-weight:bold;
-  margin-bottom:7px;
-  color:#374151;
-}
+.formGroup { margin-bottom:16px; }
+.formGroup label { display:block; font-weight:bold; margin-bottom:7px; color:#374151; }
 
 .statusBox {
   margin-top:18px;
@@ -175,6 +111,7 @@ button:hover {
   background:#f9fafb;
   border:1px solid var(--border);
   min-height:48px;
+  line-height:1.35;
 }
 
 .adminTitleWrap {
@@ -183,11 +120,7 @@ button:hover {
   gap:18px;
 }
 
-.adminLogo {
-  width:78px;
-  height:auto;
-  display:block;
-}
+.adminLogo { width:78px; height:auto; display:block; }
 
 .adminHeader {
   background:white;
@@ -201,16 +134,8 @@ button:hover {
   margin-bottom:20px;
 }
 
-.adminHeader h1 {
-  font-size:38px;
-  margin:0;
-  letter-spacing:-.03em;
-}
-
-.adminHeader p {
-  margin:6px 0 0;
-  color:var(--muted);
-}
+.adminHeader h1 { font-size:38px; margin:0; letter-spacing:-.03em; }
+.adminHeader p { margin:6px 0 0; color:var(--muted); }
 
 .loginBadge {
   background:#dcfce7;
@@ -235,9 +160,7 @@ button:hover {
   border:1px solid rgba(255,255,255,.7);
 }
 
-.adminSection.fullWidth {
-  grid-column:1 / -1;
-}
+.adminSection.fullWidth { grid-column:1 / -1; }
 
 .sectionHeader {
   display:flex;
@@ -247,17 +170,8 @@ button:hover {
   margin-bottom:22px;
 }
 
-.sectionHeader h2 {
-  margin:0;
-  font-size:26px;
-}
-
-.sectionHint {
-  color:var(--muted);
-  font-size:15px;
-  margin-top:6px;
-  line-height:1.4;
-}
+.sectionHeader h2 { margin:0; font-size:26px; }
+.sectionHint { color:var(--muted); font-size:15px; margin-top:6px; line-height:1.4; }
 
 .actionStack {
   display:flex;
@@ -271,21 +185,36 @@ button:hover {
   gap:12px;
 }
 
+.buttonRow.three {
+  grid-template-columns:1fr 1fr 1fr;
+}
+
 .fileInput {
   padding:13px;
   background:#f9fafb;
 }
 
-.roleBox {
+.roleBox,
+.userBox {
   display:grid;
   grid-template-columns:1fr 280px;
   gap:12px;
 }
 
+.userCreateBox {
+  display:grid;
+  grid-template-columns:1fr 1fr 240px;
+  gap:12px;
+}
+
+.divider {
+  height:1px;
+  background:var(--border);
+  margin:8px 0;
+}
+
 @media(max-width:900px){
-  body {
-    padding:14px;
-  }
+  body { padding:14px; }
 
   .adminHeader {
     flex-direction:column;
@@ -293,19 +222,18 @@ button:hover {
     padding:22px;
   }
 
-  .adminHeader h1 {
-    font-size:30px;
-  }
+  .adminHeader h1 { font-size:30px; }
 
   .adminGrid,
   .buttonRow,
-  .roleBox {
+  .buttonRow.three,
+  .roleBox,
+  .userBox,
+  .userCreateBox {
     grid-template-columns:1fr;
   }
 
-  .adminSection.fullWidth {
-    grid-column:auto;
-  }
+  .adminSection.fullWidth { grid-column:auto; }
 }
 </style>
 </head>
@@ -358,11 +286,18 @@ button:hover {
       </div>
 
       <div class="actionStack">
+        <div class="formGroup">
+          <label>Dzień jedzony</label>
+          <input type="date" id="mealDateInput">
+        </div>
+
         <input type="file" id="fileInput" class="fileInput" accept=".csv,text/csv">
+
         <div class="buttonRow">
           <button id="uploadButton">⬆️ Wgraj plan</button>
           <button id="clearPlanButton" class="danger">🧹 Wyczyść plan</button>
         </div>
+
         <p id="uploadStatus" class="statusBox"></p>
       </div>
     </section>
@@ -371,11 +306,12 @@ button:hover {
       <div class="sectionHeader">
         <div>
           <h2>📊 Raporty</h2>
-          <div class="sectionHint">Usuń historię zapakowanych toreb z raportu.</div>
+          <div class="sectionHint">Eksportuj raport lub usuń historię zapakowanych toreb.</div>
         </div>
       </div>
 
       <div class="actionStack">
+        <button id="exportReportButton" class="darkBtn">📤 Eksport Excel / Generuj raport</button>
         <button id="clearSessionsButton" class="warning">🗑️ Wyczyść zapakowane torby / raport</button>
         <p id="sessionsStatus" class="statusBox"></p>
       </div>
@@ -404,6 +340,37 @@ button:hover {
       </div>
     </section>
 
+    <section class="adminSection fullWidth">
+      <div class="sectionHeader">
+        <div>
+          <h2>➕ Użytkownicy</h2>
+          <div class="sectionHint">Dodawanie i usuwanie użytkowników wymaga Edge Functions z kluczem service role po stronie Supabase.</div>
+        </div>
+      </div>
+
+      <div class="actionStack">
+        <div class="userCreateBox">
+          <input id="newUserLogin" placeholder="nowy login lub email">
+          <input id="newUserPassword" type="password" placeholder="hasło dla użytkownika">
+          <select id="newUserRole">
+            <option value="worker">worker</option>
+            <option value="manager">manager</option>
+            <option value="admin">admin</option>
+          </select>
+        </div>
+        <button id="createUserButton">➕ Dodaj użytkownika</button>
+
+        <div class="divider"></div>
+
+        <div class="userBox">
+          <input id="deleteUserLogin" list="usersList" placeholder="login lub email do usunięcia">
+          <button id="deleteUserButton" class="danger">🗑️ Usuń użytkownika</button>
+        </div>
+
+        <p id="userStatus" class="statusBox"></p>
+      </div>
+    </section>
+
   </div>
 </div>
 
@@ -413,6 +380,7 @@ const PUBLISHABLE_KEY = "sb_publishable_sYrinkI1u2zr9uXZwsERNg_HE0wQKsC";
 const DOMAIN = "@pakowanie.local";
 
 let supabaseClient = null;
+let currentSession = null;
 
 const el = id => document.getElementById(id);
 
@@ -423,10 +391,7 @@ async function getUserRole(userId) {
     .eq("user_id", userId)
     .single();
 
-  if (error || !data) {
-    return null;
-  }
-
+  if (error || !data) return null;
   return data.role;
 }
 
@@ -454,6 +419,11 @@ function setRoleStatus(text, type = "info") {
   el("roleStatus").className = "statusBox " + type;
 }
 
+function setUserStatus(text, type = "info") {
+  el("userStatus").innerText = text;
+  el("userStatus").className = "statusBox " + type;
+}
+
 function getEmail(loginValue) {
   const value = String(loginValue || "").trim().toLowerCase();
   if (!value) return "";
@@ -461,51 +431,36 @@ function getEmail(loginValue) {
   return value + DOMAIN;
 }
 
-async function loadUsersList() {
-  const list = el("usersList");
-  if (!list) return;
-
-  const { data, error } = await supabaseClient.rpc("list_auth_users_for_admin");
-
-  if (error) {
-    setRoleStatus("⚠️ Nie udało się pobrać listy użytkowników: " + error.message, "bad");
-    return;
-  }
-
-  list.innerHTML = (data || []).map(row => {
-    const email = row.email || "";
-    return `<option value="${escapeHtml(email)}"></option>`;
-  }).join("");
+function displayLogin(value) {
+  return String(value || "").toLowerCase().replace(DOMAIN, "");
 }
 
-async function setUserRole() {
-  const loginValue = el("roleUserLogin").value.trim();
-  const role = el("roleSelect").value;
-  const email = getEmail(loginValue);
+function normalizeStatus(status) {
+  const value = String(status || "").toUpperCase().trim();
+  if (value === "NIEPRAWIDŁOWA") return "NIEPOPRAWNA";
+  return value;
+}
 
-  if (!email) {
-    setRoleStatus("❌ Wpisz login lub email użytkownika.", "bad");
-    return;
-  }
+function formatDatePL(dateText) {
+  if (!dateText) return "-";
+  const d = new Date(dateText);
+  if (Number.isNaN(d.getTime())) return dateText;
+  return d.toLocaleDateString("pl-PL");
+}
 
-  setRoleStatus("⏳ Nadaję rolę...", "info");
+function formatDuration(seconds) {
+  if (!seconds && seconds !== 0) return "-";
+  if (seconds < 60) return seconds + "s";
 
-  const { data, error } = await supabaseClient.rpc("set_user_role_by_email", {
-    user_email: email,
-    new_role: role
-  });
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
 
-  if (error) {
-    setRoleStatus("❌ Błąd: " + error.message, "bad");
-    return;
-  }
+  return m + "m " + s + "s";
+}
 
-  if (data !== "OK") {
-    setRoleStatus("❌ " + data, "bad");
-    return;
-  }
-
-  setRoleStatus("✅ Nadano rolę: " + role + " dla " + email, "ok");
+function splitItems(text) {
+  if (!text || text === "-") return [];
+  return String(text).split("|").map(x => x.trim()).filter(Boolean);
 }
 
 function escapeHtml(value) {
@@ -528,6 +483,55 @@ function translateError(msg) {
   if (m.includes("failed to fetch") || m.includes("network")) return "Brak połączenia z internetem lub Supabase.";
 
   return msg || "Nieznany błąd.";
+}
+
+async function loadUsersList() {
+  const list = el("usersList");
+  if (!list) return;
+
+  const { data, error } = await supabaseClient.rpc("list_auth_users_for_admin");
+
+  if (error) {
+    setRoleStatus("⚠️ Nie udało się pobrać listy użytkowników: " + error.message, "bad");
+    return;
+  }
+
+  list.innerHTML = (data || []).map(row => {
+    const email = row.email || "";
+    return `<option value="${escapeHtml(email)}"></option>`;
+  }).join("");
+}
+
+async function saveMealDate() {
+  const mealDate = el("mealDateInput").value;
+
+  if (!mealDate) {
+    setUploadStatus("❌ Wpisz dzień jedzony przed wgraniem planu.", "bad");
+    return false;
+  }
+
+  const { error } = await supabaseClient
+    .from("app_settings")
+    .upsert({ key: "meal_date", value: mealDate }, { onConflict: "key" });
+
+  if (error) {
+    setUploadStatus("❌ Nie udało się zapisać dnia jedzonego: " + error.message, "bad");
+    return false;
+  }
+
+  return true;
+}
+
+async function loadMealDate() {
+  const { data, error } = await supabaseClient
+    .from("app_settings")
+    .select("value")
+    .eq("key", "meal_date")
+    .maybeSingle();
+
+  if (!error && data && data.value) {
+    el("mealDateInput").value = data.value;
+  }
 }
 
 async function adminLogin() {
@@ -558,6 +562,8 @@ async function adminLogin() {
       return;
     }
 
+    currentSession = data.session;
+
     const role = await getUserRole(data.user.id);
 
     if (!hasAccess(role, ["admin"])) {
@@ -569,15 +575,224 @@ async function adminLogin() {
 
     el("loginScreen").classList.add("hidden");
     el("adminPanel").classList.remove("hidden");
+
     await loadUsersList();
+    await loadMealDate();
 
   } catch (err) {
     setLoginStatus("❌ Błąd techniczny: " + err.message, "bad");
   }
 }
 
+async function getReportData() {
+  const { data: sessions, error } = await supabaseClient
+    .from("packing_sessions")
+    .select("*")
+    .order("closed_at", { ascending:false })
+    .limit(5000);
+
+  if (error) throw new Error(error.message);
+
+  const { data: bagCount, error: bagCountError } = await supabaseClient.rpc("count_unique_bags");
+  if (bagCountError) throw new Error(bagCountError.message);
+
+  const { data: mealDateRow } = await supabaseClient
+    .from("app_settings")
+    .select("value")
+    .eq("key", "meal_date")
+    .maybeSingle();
+
+  return {
+    sessions: sessions || [],
+    totalBagsInPlan: bagCount || 0,
+    mealDate: mealDateRow?.value || ""
+  };
+}
+
+function sheetFromRows(rows) {
+  return XLSX.utils.aoa_to_sheet(rows);
+}
+
+function setColumnWidths(sheet, widths) {
+  sheet["!cols"] = widths.map(width => ({ wch: width }));
+}
+
+function setAutoFilter(sheet, range) {
+  sheet["!autofilter"] = { ref: range };
+}
+
+async function exportExcel() {
+  setSessionsStatus("⏳ Generuję raport Excel...", "info");
+
+  try {
+    const report = await getReportData();
+    const data = report.sessions;
+
+    const total = data.length;
+    const correct = data.filter(x => normalizeStatus(x.status) === "POPRAWNA").length;
+    const bad = data.filter(x => normalizeStatus(x.status) === "NIEPOPRAWNA").length;
+
+    const accuracy = total
+      ? Math.round((correct / total) * 100)
+      : 0;
+
+    const durations = data
+      .map(x => x.duration_seconds)
+      .filter(x => typeof x === "number");
+
+    const avgDuration = durations.length
+      ? Math.round(durations.reduce((a, b) => a + b, 0) / durations.length)
+      : 0;
+
+    const workers = {};
+
+    data.forEach(x => {
+      const worker = displayLogin(x.user_login || "brak użytkownika");
+
+      if (!workers[worker]) {
+        workers[worker] = {
+          worker,
+          total: 0,
+          correct: 0,
+          bad: 0,
+          wrong: 0,
+          missing: 0,
+          duplicates: 0,
+          duration: 0,
+          durationCount: 0
+        };
+      }
+
+      workers[worker].total++;
+
+      if (normalizeStatus(x.status) === "POPRAWNA") workers[worker].correct++;
+      if (normalizeStatus(x.status) === "NIEPOPRAWNA") workers[worker].bad++;
+
+      workers[worker].wrong += splitItems(x.wrong_trays).length;
+      workers[worker].missing += splitItems(x.missing_trays).length;
+      workers[worker].duplicates += splitItems(x.duplicate_trays).length;
+
+      if (typeof x.duration_seconds === "number") {
+        workers[worker].duration += x.duration_seconds;
+        workers[worker].durationCount++;
+      }
+    });
+
+    const workersRows = Object.values(workers)
+      .sort((a, b) => b.total - a.total)
+      .map(w => {
+        const workerAccuracy = w.total
+          ? Math.round((w.correct / w.total) * 100)
+          : 0;
+
+        const workerAvg = w.durationCount
+          ? Math.round(w.duration / w.durationCount)
+          : 0;
+
+        return [
+          w.worker,
+          w.total,
+          w.correct,
+          w.bad,
+          workerAccuracy + "%",
+          formatDuration(workerAvg),
+          w.missing,
+          w.wrong,
+          w.duplicates
+        ];
+      });
+
+    const historyRows = data.map(x => [
+      x.bag_qr || "",
+      normalizeStatus(x.status) || "",
+      displayLogin(x.user_login || ""),
+      x.expected_count || 0,
+      x.correct_count || 0,
+      formatDuration(x.duration_seconds),
+      x.missing_trays || "",
+      x.wrong_trays || "",
+      x.duplicate_trays || "",
+      x.all_scans || "",
+      x.closed_at ? new Date(x.closed_at).toLocaleString("pl-PL") : ""
+    ]);
+
+    const summaryRows = [
+      ["PODSUMOWANIE"],
+      ["Dzień jedzony", formatDatePL(report.mealDate)],
+      [],
+      ["Spakowane torby", `${total} / ${report.totalBagsInPlan}`],
+      ["Poprawne", correct],
+      ["Niepoprawne", bad],
+      ["Poprawność", accuracy + "%"],
+      ["Średni czas pakowania", formatDuration(avgDuration)]
+    ];
+
+    const workersSheetRows = [
+      ["RANKING PRACOWNIKÓW"],
+      ["Dzień jedzony", formatDatePL(report.mealDate)],
+      [],
+      ["Pracownik", "Razem", "Poprawne", "Niepoprawne", "Poprawność", "Średni czas", "Brakujące tacki", "Błędne tacki", "Duplikaty"],
+      ...workersRows
+    ];
+
+    const historySheetRows = [
+      [
+        "QR torby",
+        "Status",
+        "Pracownik",
+        "Oczekiwane tacki",
+        "Poprawne tacki",
+        "Czas pakowania",
+        "Brakujące tacki",
+        "Błędne tacki",
+        "Duplikaty",
+        "Wszystkie skany",
+        "Data zamknięcia"
+      ],
+      ...historyRows
+    ];
+
+    const workbook = XLSX.utils.book_new();
+
+    const summarySheet = sheetFromRows(summaryRows);
+    setColumnWidths(summarySheet, [28, 55]);
+
+    const workersSheet = sheetFromRows(workersSheetRows);
+    setColumnWidths(workersSheet, [28, 12, 12, 14, 14, 16, 18, 16, 14]);
+    setAutoFilter(workersSheet, "A4:I4");
+    workersSheet["!freeze"] = { xSplit: 0, ySplit: 4 };
+
+    const historySheet = sheetFromRows(historySheetRows);
+    setColumnWidths(historySheet, [24, 16, 24, 18, 16, 18, 35, 35, 35, 60, 22]);
+    setAutoFilter(historySheet, "A1:K1");
+    historySheet["!freeze"] = { xSplit: 0, ySplit: 1 };
+
+    XLSX.utils.book_append_sheet(workbook, summarySheet, "Podsumowanie");
+    XLSX.utils.book_append_sheet(workbook, workersSheet, "Pracownicy");
+    XLSX.utils.book_append_sheet(workbook, historySheet, "Historia");
+
+    const date = new Date().toISOString().slice(0, 10);
+    XLSX.writeFile(workbook, `raport_pakowania_${date}.xlsx`);
+
+    setSessionsStatus("✅ Raport Excel wygenerowany.", "ok");
+    return true;
+
+  } catch (err) {
+    setSessionsStatus("❌ Nie udało się wygenerować raportu: " + err.message, "bad");
+    return false;
+  }
+}
+
 async function clearPlan() {
-  if (!confirm("Na pewno usunąć cały plan pakowania?")) return;
+  const wantsReport = confirm("Czy chcesz pobrać raport przed usunięciem planu?\n\nOK = Tak, pobierz raport i wyczyść plan\nAnuluj = Nie, przejdź dalej");
+
+  if (wantsReport) {
+    const exported = await exportExcel();
+    if (!exported) return;
+  }
+
+  const confirmClear = confirm("Na pewno usunąć cały plan pakowania?");
+  if (!confirmClear) return;
 
   setUploadStatus("⏳ Czyszczę plan...", "info");
 
@@ -615,6 +830,15 @@ async function clearSessions() {
 }
 
 async function upload() {
+  const reportCleared = confirm("Czy poprzedni raport został wyczyszczony?\n\nOK = Tak, kontynuuj wgrywanie\nAnuluj = Nie, anuluj wgrywanie");
+  if (!reportCleared) {
+    setUploadStatus("⚠️ Wgrywanie anulowane. Najpierw wyczyść poprzedni raport.", "bad");
+    return;
+  }
+
+  const dateSaved = await saveMealDate();
+  if (!dateSaved) return;
+
   const file = el("fileInput").files[0];
 
   if (!file) {
@@ -669,7 +893,116 @@ async function upload() {
     setUploadStatus("⏳ Wgrano " + inserted + " / " + data.length + "...", "info");
   }
 
-  setUploadStatus("✅ Plan załadowany: " + inserted + " rekordów.", "ok");
+  setUploadStatus("✅ Plan załadowany: " + inserted + " rekordów. Dzień jedzony: " + formatDatePL(el("mealDateInput").value), "ok");
+}
+
+async function setUserRole() {
+  const loginValue = el("roleUserLogin").value.trim();
+  const role = el("roleSelect").value;
+  const email = getEmail(loginValue);
+
+  if (!email) {
+    setRoleStatus("❌ Wpisz login lub email użytkownika.", "bad");
+    return;
+  }
+
+  setRoleStatus("⏳ Nadaję rolę...", "info");
+
+  const { data, error } = await supabaseClient.rpc("set_user_role_by_email", {
+    user_email: email,
+    new_role: role
+  });
+
+  if (error) {
+    setRoleStatus("❌ Błąd: " + error.message, "bad");
+    return;
+  }
+
+  if (data !== "OK") {
+    setRoleStatus("❌ " + data, "bad");
+    return;
+  }
+
+  setRoleStatus("✅ Nadano rolę: " + role + " dla " + email, "ok");
+  await loadUsersList();
+}
+
+async function callAdminFunction(functionName, payload) {
+  const { data: sessionData } = await supabaseClient.auth.getSession();
+  const token = sessionData?.session?.access_token || currentSession?.access_token;
+
+  if (!token) {
+    throw new Error("Brak aktywnej sesji admina.");
+  }
+
+  const res = await fetch(`${PROJECT_URL}/functions/v1/${functionName}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`,
+      "apikey": PUBLISHABLE_KEY
+    },
+    body: JSON.stringify(payload)
+  });
+
+  const json = await res.json().catch(() => ({}));
+
+  if (!res.ok) {
+    throw new Error(json.error || json.message || "Błąd funkcji admina.");
+  }
+
+  return json;
+}
+
+async function createUser() {
+  const email = getEmail(el("newUserLogin").value);
+  const password = el("newUserPassword").value;
+  const role = el("newUserRole").value;
+
+  if (!email) {
+    setUserStatus("❌ Wpisz login lub email nowego użytkownika.", "bad");
+    return;
+  }
+
+  if (!password || password.length < 6) {
+    setUserStatus("❌ Hasło musi mieć minimum 6 znaków.", "bad");
+    return;
+  }
+
+  setUserStatus("⏳ Dodaję użytkownika...", "info");
+
+  try {
+    await callAdminFunction("admin-create-user", { email, password, role });
+    setUserStatus("✅ Dodano użytkownika: " + email + " z rolą " + role, "ok");
+    el("newUserLogin").value = "";
+    el("newUserPassword").value = "";
+    await loadUsersList();
+  } catch (err) {
+    setUserStatus("❌ Nie udało się dodać użytkownika: " + err.message, "bad");
+  }
+}
+
+async function deleteUser() {
+  const email = getEmail(el("deleteUserLogin").value);
+
+  if (!email) {
+    setUserStatus("❌ Wpisz login lub email użytkownika do usunięcia.", "bad");
+    return;
+  }
+
+  const confirmed = confirm("Na pewno usunąć użytkownika: " + email + "?");
+  if (!confirmed) return;
+
+  setUserStatus("⏳ Usuwam użytkownika...", "info");
+
+  try {
+    await callAdminFunction("admin-delete-user", { email });
+    setUserStatus("✅ Usunięto użytkownika: " + email, "ok");
+    el("deleteUserLogin").value = "";
+    await loadUsersList();
+  } catch (err) {
+    setUserStatus("❌ Nie udało się usunąć użytkownika: " + err.message, "bad");
+  }
 }
 
 window.addEventListener("DOMContentLoaded", () => {
@@ -685,7 +1018,10 @@ window.addEventListener("DOMContentLoaded", () => {
   el("uploadButton").addEventListener("click", upload);
   el("clearPlanButton").addEventListener("click", clearPlan);
   el("clearSessionsButton").addEventListener("click", clearSessions);
+  el("exportReportButton").addEventListener("click", exportExcel);
   el("setRoleButton").addEventListener("click", setUserRole);
+  el("createUserButton").addEventListener("click", createUser);
+  el("deleteUserButton").addEventListener("click", deleteUser);
 
   el("adminLogin").addEventListener("keydown", e => {
     if (e.key === "Enter") el("adminPassword").focus();
