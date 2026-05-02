@@ -28,6 +28,7 @@
   --orange:#f97316;
   --orange-dark:#ea580c;
   --orange-soft:#fff7ed;
+  --yellow-soft:#fef9c3;
   --dark:#111827;
   --dark-hover:#030712;
   --shadow:0 14px 45px rgba(15,23,42,.09);
@@ -96,12 +97,15 @@ input::placeholder { color:#9ca3af; }
 .warning:hover { background:var(--orange-dark); }
 .darkBtn { background:var(--dark); box-shadow:0 8px 18px rgba(17,24,39,.16); }
 .darkBtn:hover { background:var(--dark-hover); }
+.lightBtn { background:#e5e7eb; color:#111827; box-shadow:none; }
+.lightBtn:hover { background:#d1d5db; }
+.smallBtn { min-height:40px; padding:9px 12px; font-size:14px; border-radius:12px; }
 .ok { color:var(--green); font-weight:bold; }
 .bad { color:var(--red); font-weight:bold; }
 .info { color:var(--blue); font-weight:bold; }
+.warn { color:var(--orange); font-weight:bold; }
 .muted { color:var(--muted); }
 
-/* LOGIN — spójny z resztą stron */
 .loginCard {
   background:white;
   padding:36px;
@@ -150,28 +154,14 @@ input::placeholder { color:#9ca3af; }
   font-size:15px;
 }
 
-.statusBox.ok {
-  background:var(--green-soft);
-  border-color:#bbf7d0;
-  color:#166534;
-}
+.statusBox.ok { background:var(--green-soft); border-color:#bbf7d0; color:#166534; }
+.statusBox.bad { background:var(--red-soft); border-color:#fecaca; color:#991b1b; }
+.statusBox.info { background:var(--blue-soft); border-color:#bfdbfe; color:#1d4ed8; }
+.statusBox.warn { background:var(--orange-soft); border-color:#fed7aa; color:#9a3412; }
 
-.statusBox.bad {
-  background:var(--red-soft);
-  border-color:#fecaca;
-  color:#991b1b;
-}
-
-.statusBox.info {
-  background:var(--blue-soft);
-  border-color:#bfdbfe;
-  color:#1d4ed8;
-}
-
-/* PANEL */
 .pageShell {
   width:100%;
-  max-width:1320px;
+  max-width:1480px;
   margin:0 auto;
 }
 
@@ -213,6 +203,14 @@ input::placeholder { color:#9ca3af; }
   margin:7px 0 0;
   color:var(--muted);
   line-height:1.4;
+}
+
+.headerActions {
+  display:flex;
+  gap:10px;
+  align-items:center;
+  flex-wrap:wrap;
+  justify-content:flex-end;
 }
 
 .loginBadge {
@@ -291,6 +289,10 @@ input::placeholder { color:#9ca3af; }
   gap:12px;
 }
 
+.buttonRow.three {
+  grid-template-columns:1fr 1fr 1fr;
+}
+
 .fileInput {
   padding:13px;
   background:#f9fafb;
@@ -298,7 +300,8 @@ input::placeholder { color:#9ca3af; }
 }
 
 .roleBox,
-.userBox {
+.userBox,
+.stationActionBox {
   display:grid;
   grid-template-columns:minmax(0,1fr) 280px;
   gap:12px;
@@ -340,7 +343,164 @@ input::placeholder { color:#9ca3af; }
   line-height:1.45;
 }
 
-@media(max-width:1000px){
+.statsGrid {
+  display:grid;
+  grid-template-columns:repeat(4, minmax(0, 1fr));
+  gap:12px;
+}
+
+.statCard {
+  background:#f9fafb;
+  border:1px solid var(--border);
+  border-radius:20px;
+  padding:18px;
+}
+
+.statLabel {
+  color:var(--muted);
+  font-size:13px;
+  font-weight:900;
+  text-transform:uppercase;
+  letter-spacing:.04em;
+  margin-bottom:8px;
+}
+
+.statValue {
+  font-size:30px;
+  font-weight:900;
+  letter-spacing:-.04em;
+}
+
+.tableWrap {
+  width:100%;
+  overflow:auto;
+  border:1px solid var(--border);
+  border-radius:18px;
+  background:white;
+}
+
+table {
+  width:100%;
+  border-collapse:collapse;
+  font-size:15px;
+}
+
+th, td {
+  padding:12px 12px;
+  border-bottom:1px solid var(--border);
+  text-align:left;
+  vertical-align:middle;
+  white-space:nowrap;
+}
+
+th {
+  background:#f9fafb;
+  color:#374151;
+  font-size:12px;
+  text-transform:uppercase;
+  letter-spacing:.04em;
+}
+
+tr:last-child td { border-bottom:none; }
+
+.badRow { background:#fff1f2; }
+.warnRow { background:#fffbeb; }
+.goodRow { background:#f0fdf4; }
+.activeRow { background:#eff6ff; }
+
+.badge {
+  display:inline-flex;
+  align-items:center;
+  padding:6px 10px;
+  border-radius:999px;
+  font-weight:900;
+  font-size:13px;
+  border:1px solid transparent;
+}
+
+.badgeOk { background:var(--green-soft); color:#166534; border-color:#bbf7d0; }
+.badgeBad { background:var(--red-soft); color:#991b1b; border-color:#fecaca; }
+.badgeWarn { background:var(--orange-soft); color:#9a3412; border-color:#fed7aa; }
+.badgeInfo { background:var(--blue-soft); color:#1e40af; border-color:#bfdbfe; }
+.badgeMuted { background:#f3f4f6; color:#374151; border-color:#e5e7eb; }
+
+.modalBg {
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.55);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  z-index:999;
+  padding:14px;
+}
+
+.modal {
+  background:white;
+  padding:28px;
+  border-radius:18px;
+  width:90%;
+  max-width:720px;
+  max-height:88vh;
+  overflow:auto;
+  box-shadow:0 25px 80px rgba(0,0,0,.25);
+}
+
+.modalWide { max-width:1180px; }
+
+.modal h2 {
+  font-size:30px;
+  margin:0 0 12px;
+}
+
+.modalText {
+  font-size:20px;
+  color:#374151;
+  line-height:1.45;
+  margin-bottom:18px;
+}
+
+.modalDetails {
+  background:#f9fafb;
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:14px 16px;
+  margin-bottom:18px;
+  font-size:18px;
+  line-height:1.45;
+}
+
+.modalBtn {
+  width:100%;
+  font-size:22px;
+  padding:15px;
+  margin:8px 0;
+  border-radius:10px;
+}
+
+.btnCancel {
+  background:#e5e7eb;
+  color:#111827;
+  box-shadow:none;
+}
+
+.btnCancel:hover {
+  background:#d1d5db;
+}
+
+.btnReplace {
+  background:#f97316;
+  color:white;
+  border:none;
+}
+
+.btnAnother {
+  background:#2563eb;
+  color:white;
+  border:none;
+}
+
+@media(max-width:1100px){
   body { padding:14px; }
 
   .adminHeader {
@@ -350,14 +510,18 @@ input::placeholder { color:#9ca3af; }
     border-radius:24px;
   }
 
+  .headerActions { justify-content:flex-start; width:100%; }
   .adminHeader h1 { font-size:30px; }
   .adminLogo { width:64px; }
 
   .adminGrid,
   .buttonRow,
+  .buttonRow.three,
   .roleBox,
   .userBox,
-  .userCreateBox {
+  .userCreateBox,
+  .stationActionBox,
+  .statsGrid {
     grid-template-columns:1fr;
   }
 
@@ -375,7 +539,7 @@ input::placeholder { color:#9ca3af; }
   </div>
 
   <h1>Panel administratora</h1>
-  <p class="loginSubtitle">Zaloguj się, aby zarządzać planem, raportami i użytkownikami</p>
+  <p class="loginSubtitle">Zaloguj się, aby zarządzać planem, raportami, użytkownikami i pakowaniem stanowiskowym</p>
 
   <label>Login lub email</label>
   <input id="adminLogin" class="loginInput" placeholder="np. JanKowalski">
@@ -394,10 +558,14 @@ input::placeholder { color:#9ca3af; }
       <img src="logo.png" class="adminLogo" alt="logo">
       <div>
         <h1>Panel administratora</h1>
-        <p>Zarządzanie planem, raportami i dostępami użytkowników.</p>
+        <p>Zarządzanie planem, raportami, użytkownikami i pakowaniem stanowiskowym.</p>
       </div>
     </div>
-    <div class="loginBadge">✅ Zalogowano</div>
+    <div class="headerActions">
+      <div class="loginBadge" id="adminLoginBadge">✅ Zalogowano</div>
+      <button class="lightBtn smallBtn" style="width:auto;" onclick="refreshAdminData()">🔄 Odśwież</button>
+      <button class="danger smallBtn" style="width:auto;" onclick="adminLogout()">Wyloguj</button>
+    </div>
   </div>
 
   <div class="adminGrid">
@@ -445,6 +613,70 @@ input::placeholder { color:#9ca3af; }
           <button id="exportReportButton" class="darkBtn">📤 Eksport Excel / Generuj raport</button>
           <button id="clearSessionsButton" class="warning">🗑️ Wyczyść zapakowane torby / raport</button>
           <p id="sessionsStatus" class="statusBox"></p>
+        </div>
+      </div>
+    </section>
+
+    <section class="adminSection fullWidth">
+      <div class="sectionHeader">
+        <div>
+          <h2>🧑‍🏭 Pakowanie stanowiskowe — podgląd hali</h2>
+          <div class="sectionHint">Kontrola aktywnych stanowisk, kolejek, błędów i logowań pracowników.</div>
+        </div>
+      </div>
+
+      <div class="sectionBody">
+        <div class="actionStack">
+          <div class="statsGrid">
+            <div class="statCard">
+              <div class="statLabel">Aktywne stanowiska</div>
+              <div class="statValue" id="statLines">0</div>
+            </div>
+            <div class="statCard">
+              <div class="statLabel">Torby w obiegu</div>
+              <div class="statValue" id="statQueued">0</div>
+            </div>
+            <div class="statCard">
+              <div class="statLabel">Torby z błędem</div>
+              <div class="statValue bad" id="statBadStation">0</div>
+            </div>
+            <div class="statCard">
+              <div class="statLabel">Zalogowani</div>
+              <div class="statValue" id="statLogins">0</div>
+            </div>
+          </div>
+
+          <div class="buttonRow.three buttonRow">
+            <button class="lightBtn" id="refreshStationButton">🔄 Odśwież stanowiska</button>
+            <button class="warning" id="clearAllQueuesButton">🧹 Wyczyść wszystkie kolejki</button>
+            <button class="danger" id="closeAllLinesButton">🔒 Zamknij wszystkie stanowiska</button>
+          </div>
+
+          <p id="stationStatus" class="statusBox"></p>
+
+          <div class="subPanel">
+            <h3 class="subPanelTitle">Aktywne stanowiska i kolejki</h3>
+            <div id="stationLinesTable" class="tableWrap"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="adminSection fullWidth">
+      <div class="sectionHeader">
+        <div>
+          <h2>🔐 Aktywne logowania</h2>
+          <div class="sectionHint">Podgląd kto jest zalogowany. Możesz awaryjnie zwolnić blokadę użytkownika.</div>
+        </div>
+      </div>
+
+      <div class="sectionBody">
+        <div class="actionStack">
+          <div class="adminTip">
+            Używaj wylogowania awaryjnego tylko gdy pracownik zamknął kartę, zawiesił się komputer albo konto zostało zablokowane przez stare logowanie.
+          </div>
+          <div id="activeLoginsTable" class="tableWrap"></div>
+          <p id="loginsStatus" class="statusBox"></p>
         </div>
       </div>
     </section>
@@ -520,6 +752,25 @@ input::placeholder { color:#9ca3af; }
   </div>
 </div>
 
+<div id="confirmModal" class="modalBg hidden">
+  <div class="modal">
+    <h2 id="confirmTitle">Potwierdź akcję</h2>
+    <p id="confirmText" class="modalText"></p>
+    <div id="confirmDetails" class="modalDetails hidden"></div>
+    <div id="confirmButtons"></div>
+  </div>
+</div>
+
+<div id="detailsModal" class="modalBg hidden">
+  <div class="modal modalWide">
+    <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:16px;">
+      <h2 id="detailsTitle">Szczegóły</h2>
+      <button class="danger smallBtn" style="width:auto;" onclick="closeDetailsModal()">Zamknij</button>
+    </div>
+    <div id="detailsContent"></div>
+  </div>
+</div>
+
 <script>
 const PROJECT_URL = "https://lanmmbpqxmenyjwvwpkt.supabase.co";
 const PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxhbm1tYnBxeG1lbnlqd3Z3cGt0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzczOTE2MjgsImV4cCI6MjA5Mjk2NzYyOH0.cKZ2Cf1x5Ef-nFQRziVBHn_KJcU6BOCD7B9sD-Vs1uM";
@@ -527,47 +778,60 @@ const DOMAIN = "@pakowanie.local";
 
 let supabaseClient = null;
 let currentSession = null;
+let activeLinesCache = [];
+let activeLoginsCache = [];
 
 const el = id => document.getElementById(id);
 
-async function getUserRole(userId) {
-  const { data, error } = await supabaseClient
-    .from("user_roles")
-    .select("role")
-    .eq("user_id", userId)
-    .single();
+function setLoginStatus(text, type = "info") { setBox("loginStatus", text, type); }
+function setUploadStatus(text, type = "info") { setBox("uploadStatus", text, type); }
+function setSessionsStatus(text, type = "info") { setBox("sessionsStatus", text, type); }
+function setRoleStatus(text, type = "info") { setBox("roleStatus", text, type); }
+function setUserStatus(text, type = "info") { setBox("userStatus", text, type); }
+function setStationStatus(text, type = "info") { setBox("stationStatus", text, type); }
+function setLoginsStatus(text, type = "info") { setBox("loginsStatus", text, type); }
 
-  if (error || !data) return null;
-  return data.role;
+function setBox(id, text, type = "info") {
+  const box = el(id);
+  if (!box) return;
+  box.innerText = text;
+  box.className = "statusBox " + type;
 }
 
-function hasAccess(role, allowedRoles) {
-  return allowedRoles.includes(role);
+function showChoiceModal({ title, text, details = "", buttons = [] }) {
+  return new Promise(resolve => {
+    el("confirmTitle").innerText = title || "Potwierdź akcję";
+    el("confirmText").innerText = text || "";
+
+    if (details) {
+      el("confirmDetails").innerHTML = details;
+      el("confirmDetails").classList.remove("hidden");
+    } else {
+      el("confirmDetails").innerHTML = "";
+      el("confirmDetails").classList.add("hidden");
+    }
+
+    el("confirmButtons").innerHTML = buttons.map((btn, index) => `
+      <button class="modalBtn ${btn.className || "btnAnother"}" data-index="${index}">
+        ${btn.label}
+      </button>
+    `).join("");
+
+    [...el("confirmButtons").querySelectorAll("button")].forEach(button => {
+      button.onclick = () => {
+        const index = Number(button.dataset.index);
+        const value = buttons[index]?.value;
+        el("confirmModal").classList.add("hidden");
+        resolve(value);
+      };
+    });
+
+    el("confirmModal").classList.remove("hidden");
+  });
 }
 
-function setLoginStatus(text, type = "info") {
-  el("loginStatus").innerText = text;
-  el("loginStatus").className = "statusBox " + type;
-}
-
-function setUploadStatus(text, type = "info") {
-  el("uploadStatus").innerText = text;
-  el("uploadStatus").className = "statusBox " + type;
-}
-
-function setSessionsStatus(text, type = "info") {
-  el("sessionsStatus").innerText = text;
-  el("sessionsStatus").className = "statusBox " + type;
-}
-
-function setRoleStatus(text, type = "info") {
-  el("roleStatus").innerText = text;
-  el("roleStatus").className = "statusBox " + type;
-}
-
-function setUserStatus(text, type = "info") {
-  el("userStatus").innerText = text;
-  el("userStatus").className = "statusBox " + type;
+function closeDetailsModal() {
+  el("detailsModal").classList.add("hidden");
 }
 
 function getEmail(loginValue) {
@@ -592,6 +856,13 @@ function formatDatePL(dateText) {
   const d = new Date(dateText);
   if (Number.isNaN(d.getTime())) return dateText;
   return d.toLocaleDateString("pl-PL");
+}
+
+function formatDateTimePL(dateText) {
+  if (!dateText) return "-";
+  const d = new Date(dateText);
+  if (Number.isNaN(d.getTime())) return dateText;
+  return d.toLocaleString("pl-PL");
 }
 
 function formatDuration(seconds) {
@@ -629,6 +900,85 @@ function translateError(msg) {
   if (m.includes("failed to fetch") || m.includes("network")) return "Brak połączenia z internetem lub Supabase.";
 
   return msg || "Nieznany błąd.";
+}
+
+async function getUserRole(userId) {
+  const { data, error } = await supabaseClient
+    .from("user_roles")
+    .select("role")
+    .eq("user_id", userId)
+    .single();
+
+  if (error || !data) return null;
+  return data.role;
+}
+
+function hasAccess(role, allowedRoles) {
+  return allowedRoles.includes(role);
+}
+
+async function adminLogin() {
+  try {
+    setLoginStatus("⏳ Loguję...", "info");
+
+    const loginValue = el("adminLogin").value;
+    const passwordValue = el("adminPassword").value;
+    const email = getEmail(loginValue);
+
+    if (!email) {
+      setLoginStatus("❌ Wpisz login lub email.", "bad");
+      return;
+    }
+
+    if (!passwordValue) {
+      setLoginStatus("❌ Wpisz hasło.", "bad");
+      return;
+    }
+
+    const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password: passwordValue });
+
+    if (error) {
+      setLoginStatus("❌ " + translateError(error.message), "bad");
+      return;
+    }
+
+    currentSession = data.session;
+
+    const role = await getUserRole(data.user.id);
+
+    if (!hasAccess(role, ["admin"])) {
+      setLoginStatus("❌ Brak dostępu do panelu administratora.", "bad");
+      return;
+    }
+
+    el("adminLoginBadge").innerText = "✅ " + displayLogin(data.user.email);
+    setLoginStatus("✅ Zalogowano jako: " + data.user.email, "ok");
+
+    el("loginScreen").classList.add("hidden");
+    el("adminPanel").classList.remove("hidden");
+
+    await refreshAdminData();
+
+  } catch (err) {
+    setLoginStatus("❌ Błąd techniczny: " + err.message, "bad");
+  }
+}
+
+async function adminLogout() {
+  await supabaseClient.auth.signOut();
+  currentSession = null;
+  el("adminPanel").classList.add("hidden");
+  el("loginScreen").classList.remove("hidden");
+  setLoginStatus("Status: gotowy do logowania", "info");
+}
+
+async function refreshAdminData() {
+  await Promise.allSettled([
+    loadUsersList(),
+    loadMealDate(),
+    loadStationOverview(),
+    loadActiveLogins()
+  ]);
 }
 
 async function loadUsersList() {
@@ -680,56 +1030,6 @@ async function loadMealDate() {
   }
 }
 
-async function adminLogin() {
-  try {
-    setLoginStatus("⏳ Loguję...", "info");
-
-    const loginValue = el("adminLogin").value;
-    const passwordValue = el("adminPassword").value;
-    const email = getEmail(loginValue);
-
-    if (!email) {
-      setLoginStatus("❌ Wpisz login lub email.", "bad");
-      return;
-    }
-
-    if (!passwordValue) {
-      setLoginStatus("❌ Wpisz hasło.", "bad");
-      return;
-    }
-
-    const { data, error } = await supabaseClient.auth.signInWithPassword({
-      email,
-      password: passwordValue
-    });
-
-    if (error) {
-      setLoginStatus("❌ " + translateError(error.message), "bad");
-      return;
-    }
-
-    currentSession = data.session;
-
-    const role = await getUserRole(data.user.id);
-
-    if (!hasAccess(role, ["admin"])) {
-      setLoginStatus("❌ Brak dostępu do panelu administratora.", "bad");
-      return;
-    }
-
-    setLoginStatus("✅ Zalogowano jako: " + data.user.email, "ok");
-
-    el("loginScreen").classList.add("hidden");
-    el("adminPanel").classList.remove("hidden");
-
-    await loadUsersList();
-    await loadMealDate();
-
-  } catch (err) {
-    setLoginStatus("❌ Błąd techniczny: " + err.message, "bad");
-  }
-}
-
 async function getReportData() {
   const { data: sessions, error } = await supabaseClient
     .from("packing_sessions")
@@ -778,17 +1078,10 @@ async function exportExcel() {
     const correct = data.filter(x => normalizeStatus(x.status) === "POPRAWNA").length;
     const bad = data.filter(x => normalizeStatus(x.status) === "NIEPOPRAWNA").length;
 
-    const accuracy = total
-      ? Math.round((correct / total) * 100)
-      : 0;
+    const accuracy = total ? Math.round((correct / total) * 100) : 0;
 
-    const durations = data
-      .map(x => x.duration_seconds)
-      .filter(x => typeof x === "number");
-
-    const avgDuration = durations.length
-      ? Math.round(durations.reduce((a, b) => a + b, 0) / durations.length)
-      : 0;
+    const durations = data.map(x => x.duration_seconds).filter(x => typeof x === "number");
+    const avgDuration = durations.length ? Math.round(durations.reduce((a, b) => a + b, 0) / durations.length) : 0;
 
     const workers = {};
 
@@ -796,17 +1089,7 @@ async function exportExcel() {
       const worker = displayLogin(x.user_login || "brak użytkownika");
 
       if (!workers[worker]) {
-        workers[worker] = {
-          worker,
-          total: 0,
-          correct: 0,
-          bad: 0,
-          wrong: 0,
-          missing: 0,
-          duplicates: 0,
-          duration: 0,
-          durationCount: 0
-        };
+        workers[worker] = { worker, total:0, correct:0, bad:0, wrong:0, missing:0, duplicates:0, duration:0, durationCount:0 };
       }
 
       workers[worker].total++;
@@ -827,25 +1110,10 @@ async function exportExcel() {
     const workersRows = Object.values(workers)
       .sort((a, b) => b.total - a.total)
       .map(w => {
-        const workerAccuracy = w.total
-          ? Math.round((w.correct / w.total) * 100)
-          : 0;
+        const workerAccuracy = w.total ? Math.round((w.correct / w.total) * 100) : 0;
+        const workerAvg = w.durationCount ? Math.round(w.duration / w.durationCount) : 0;
 
-        const workerAvg = w.durationCount
-          ? Math.round(w.duration / w.durationCount)
-          : 0;
-
-        return [
-          w.worker,
-          w.total,
-          w.correct,
-          w.bad,
-          workerAccuracy + "%",
-          formatDuration(workerAvg),
-          w.missing,
-          w.wrong,
-          w.duplicates
-        ];
+        return [w.worker, w.total, w.correct, w.bad, workerAccuracy + "%", formatDuration(workerAvg), w.missing, w.wrong, w.duplicates];
       });
 
     const historyRows = data.map(x => [
@@ -882,19 +1150,7 @@ async function exportExcel() {
     ];
 
     const historySheetRows = [
-      [
-        "QR torby",
-        "Status",
-        "Pracownik",
-        "Oczekiwane tacki",
-        "Poprawne tacki",
-        "Czas pakowania",
-        "Brakujące tacki",
-        "Błędne tacki",
-        "Duplikaty",
-        "Wszystkie skany",
-        "Data zamknięcia"
-      ],
+      ["QR torby", "Status", "Pracownik", "Oczekiwane tacki", "Poprawne tacki", "Czas pakowania", "Brakujące tacki", "Błędne tacki", "Duplikaty", "Wszystkie skany", "Data zamknięcia"],
       ...historyRows
     ];
 
@@ -930,22 +1186,27 @@ async function exportExcel() {
 }
 
 async function clearPlan() {
-  const wantsReport = confirm("Czy chcesz pobrać raport przed usunięciem planu?\n\nOK = Tak, pobierz raport i wyczyść plan\nAnuluj = Nie, przejdź dalej");
+  const wantsReport = await showChoiceModal({
+    title: "🧹 Wyczyścić plan pakowania?",
+    text: "Przed usunięciem planu możesz pobrać aktualny raport.",
+    details: "Usunięcie planu skasuje listę toreb i tacek do pakowania. Historii raportu nie usuwa ten przycisk.",
+    buttons: [
+      { label:"Anuluj", value:"cancel", className:"btnCancel" },
+      { label:"Wyczyść bez raportu", value:"clear", className:"btnReplace" },
+      { label:"Pobierz raport i wyczyść", value:"report_clear", className:"btnAnother" }
+    ]
+  });
 
-  if (wantsReport) {
+  if (wantsReport === "cancel") return;
+
+  if (wantsReport === "report_clear") {
     const exported = await exportExcel();
     if (!exported) return;
   }
 
-  const confirmClear = confirm("Na pewno usunąć cały plan pakowania?");
-  if (!confirmClear) return;
-
   setUploadStatus("⏳ Czyszczę plan...", "info");
 
-  const { error } = await supabaseClient
-    .from("packing_plan")
-    .delete()
-    .neq("id", 0);
+  const { error } = await supabaseClient.from("packing_plan").delete().neq("id", 0);
 
   if (error) {
     setUploadStatus("❌ Błąd czyszczenia planu: " + error.message, "bad");
@@ -955,18 +1216,21 @@ async function clearPlan() {
 }
 
 async function clearSessions() {
-  const firstConfirm = confirm("Na pewno usunąć wszystkie zapakowane torby z raportu?");
-  if (!firstConfirm) return;
+  const choice = await showChoiceModal({
+    title: "🗑️ Wyczyścić raport?",
+    text: "To usunie historię zapakowanych toreb z raportu.",
+    details: "Tej operacji nie da się cofnąć. Upewnij się, że raport Excel został pobrany, jeżeli jest potrzebny.",
+    buttons: [
+      { label:"Anuluj", value:"cancel", className:"btnCancel" },
+      { label:"Usuń historię raportu", value:"clear", className:"btnReplace" }
+    ]
+  });
 
-  const secondConfirm = confirm("To usunie historię pakowania z raportu. Kontynuować?");
-  if (!secondConfirm) return;
+  if (choice !== "clear") return;
 
   setSessionsStatus("⏳ Czyszczę zapakowane torby / raport...", "info");
 
-  const { error } = await supabaseClient
-    .from("packing_sessions")
-    .delete()
-    .neq("status", "__never_match__");
+  const { error } = await supabaseClient.from("packing_sessions").delete().neq("status", "__never_match__");
 
   if (error) {
     setSessionsStatus("❌ Błąd czyszczenia raportu: " + error.message, "bad");
@@ -976,9 +1240,18 @@ async function clearSessions() {
 }
 
 async function upload() {
-  const reportCleared = confirm("Czy poprzedni raport został wyczyszczony?\n\nOK = Tak, kontynuuj wgrywanie\nAnuluj = Nie, anuluj wgrywanie");
-  if (!reportCleared) {
-    setUploadStatus("⚠️ Wgrywanie anulowane. Najpierw wyczyść poprzedni raport.", "bad");
+  const reportCleared = await showChoiceModal({
+    title: "⬆️ Wgrać nowy plan?",
+    text: "Przed wgraniem nowego planu poprzedni raport powinien być wyczyszczony.",
+    details: "Jeżeli raport nie został wyczyszczony, nowe pakowanie może mieszać się ze starymi wynikami.",
+    buttons: [
+      { label:"Anuluj — raport nie jest wyczyszczony", value:"cancel", className:"btnCancel" },
+      { label:"Tak, raport jest wyczyszczony — kontynuuj", value:"continue", className:"btnAnother" }
+    ]
+  });
+
+  if (reportCleared !== "continue") {
+    setUploadStatus("⚠️ Wgrywanie anulowane. Najpierw wyczyść poprzedni raport.", "warn");
     return;
   }
 
@@ -1026,9 +1299,7 @@ async function upload() {
   for (let i = 0; i < data.length; i += chunkSize) {
     const chunk = data.slice(i, i + chunkSize);
 
-    const { error } = await supabaseClient
-      .from("packing_plan")
-      .insert(chunk);
+    const { error } = await supabaseClient.from("packing_plan").insert(chunk);
 
     if (error) {
       setUploadStatus("❌ Błąd importu po " + inserted + " rekordach: " + error.message, "bad");
@@ -1054,10 +1325,7 @@ async function setUserRole() {
 
   setRoleStatus("⏳ Nadaję rolę...", "info");
 
-  const { data, error } = await supabaseClient.rpc("set_user_role_by_email", {
-    user_email: email,
-    new_role: role
-  });
+  const { data, error } = await supabaseClient.rpc("set_user_role_by_email", { user_email: email, new_role: role });
 
   if (error) {
     setRoleStatus("❌ Błąd: " + error.message, "bad");
@@ -1136,8 +1404,17 @@ async function deleteUser() {
     return;
   }
 
-  const confirmed = confirm("Na pewno usunąć użytkownika: " + email + "?");
-  if (!confirmed) return;
+  const choice = await showChoiceModal({
+    title:"🗑️ Usunąć użytkownika?",
+    text:"To usunie konto użytkownika z systemu logowania.",
+    details:`Użytkownik: <b>${escapeHtml(email)}</b>`,
+    buttons:[
+      { label:"Anuluj", value:"cancel", className:"btnCancel" },
+      { label:"Usuń użytkownika", value:"delete", className:"btnReplace" }
+    ]
+  });
+
+  if (choice !== "delete") return;
 
   setUserStatus("⏳ Usuwam użytkownika...", "info");
 
@@ -1146,9 +1423,342 @@ async function deleteUser() {
     setUserStatus("✅ Usunięto użytkownika: " + email, "ok");
     el("deleteUserLogin").value = "";
     await loadUsersList();
+    await loadActiveLogins();
   } catch (err) {
     setUserStatus("❌ Nie udało się usunąć użytkownika: " + err.message, "bad");
   }
+}
+
+async function loadStationOverview() {
+  setStationStatus("⏳ Pobieram stan pakowania stanowiskowego...", "info");
+
+  const { data, error } = await supabaseClient.rpc("admin_station_overview");
+
+  if (error) {
+    setStationStatus("❌ Nie udało się pobrać stanowisk: " + error.message, "bad");
+    renderStationLines([]);
+    return;
+  }
+
+  activeLinesCache = data || [];
+  renderStationLines(activeLinesCache);
+
+  const activeLines = activeLinesCache.filter(x => String(x.line_status || "").toLowerCase() === "active").length;
+  const queued = activeLinesCache.reduce((sum, x) => sum + Number(x.active_bags || 0), 0);
+  const bad = activeLinesCache.reduce((sum, x) => sum + Number(x.bad_bags || 0), 0);
+
+  el("statLines").innerText = activeLines;
+  el("statQueued").innerText = queued;
+  el("statBadStation").innerText = bad;
+
+  setStationStatus("✅ Dane stanowisk odświeżone.", "ok");
+}
+
+function renderStationLines(rows) {
+  if (!rows.length) {
+    el("stationLinesTable").innerHTML = `<div style="padding:18px;color:#6b7280;">Brak aktywnych stanowisk.</div>`;
+    return;
+  }
+
+  el("stationLinesTable").innerHTML = `
+    <table>
+      <thead>
+        <tr>
+          <th>Stanowisko</th>
+          <th>Status</th>
+          <th>Lider</th>
+          <th>Pracownicy</th>
+          <th>W obiegu</th>
+          <th>Gotowe</th>
+          <th>Błędy</th>
+          <th>Utworzono</th>
+          <th>Akcje</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${rows.map((line, index) => {
+          const status = String(line.line_status || "-");
+          const rowClass = status === "active" ? "activeRow" : status === "closed" ? "" : "warnRow";
+          return `
+            <tr class="${rowClass}">
+              <td><b>${escapeHtml(line.line_name || "-")}</b></td>
+              <td>${stationStatusBadge(status)}</td>
+              <td>${escapeHtml(displayLogin(line.leader_email || "-"))}</td>
+              <td>${Number(line.active_workers || 0)}</td>
+              <td><b>${Number(line.active_bags || 0)}</b></td>
+              <td class="ok">${Number(line.done_bags || 0)}</td>
+              <td class="bad">${Number(line.bad_bags || 0)}</td>
+              <td>${formatDateTimePL(line.created_at)}</td>
+              <td>
+                <div style="display:flex;gap:8px;min-width:360px;">
+                  <button class="smallBtn lightBtn" onclick="showLineDetails(${index})">Szczegóły</button>
+                  <button class="smallBtn warning" onclick="clearStationQueue('${escapeHtml(line.line_id)}','${escapeHtml(line.line_name || "")}')">Wyczyść kolejkę</button>
+                  <button class="smallBtn danger" onclick="closeStationLineAdmin('${escapeHtml(line.line_id)}','${escapeHtml(line.line_name || "")}')">Zamknij</button>
+                </div>
+              </td>
+            </tr>
+          `;
+        }).join("")}
+      </tbody>
+    </table>
+  `;
+}
+
+function stationStatusBadge(status) {
+  if (status === "active") return `<span class="badge badgeOk">AKTYWNE</span>`;
+  if (status === "closed") return `<span class="badge badgeMuted">ZAMKNIĘTE</span>`;
+  return `<span class="badge badgeWarn">${escapeHtml(status || "-")}</span>`;
+}
+
+async function showLineDetails(index) {
+  const line = activeLinesCache[index];
+  if (!line) return;
+
+  el("detailsTitle").innerText = "Stanowisko: " + (line.line_name || "-");
+  el("detailsContent").innerHTML = `<div class="statusBox info">⏳ Pobieram szczegóły stanowiska...</div>`;
+  el("detailsModal").classList.remove("hidden");
+
+  const { data, error } = await supabaseClient.rpc("admin_station_line_details", { target_line_id: line.line_id });
+
+  if (error) {
+    el("detailsContent").innerHTML = `<div class="statusBox bad">❌ ${escapeHtml(error.message)}</div>`;
+    return;
+  }
+
+  const rows = data || [];
+
+  if (!rows.length) {
+    el("detailsContent").innerHTML = `<div class="statusBox info">Brak toreb w kolejce tego stanowiska.</div>`;
+    return;
+  }
+
+  el("detailsContent").innerHTML = `
+    <div class="tableWrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Pozycja</th>
+            <th>Torba</th>
+            <th>Status torby</th>
+            <th>Posiłek</th>
+            <th>Tacka oczekiwana</th>
+            <th>Status tacki</th>
+            <th>Skan</th>
+            <th>Pracownik</th>
+            <th>Czas</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rows.map(r => `
+            <tr class="${r.bag_has_error ? "badRow" : ""}">
+              <td>${escapeHtml(r.bag_position ?? "-")}</td>
+              <td><b>${escapeHtml(r.bag_qr || "-")}</b></td>
+              <td>${escapeHtml(r.bag_status || "-")}</td>
+              <td>${escapeHtml(r.meal || "-")}</td>
+              <td>${escapeHtml(r.expected_tray_qr || "-")}</td>
+              <td>${scanStatusBadge(r.scan_status)}</td>
+              <td>${escapeHtml(r.scanned_tray_qr || "-")}</td>
+              <td>${escapeHtml(displayLogin(r.scanned_by_email || "-"))}</td>
+              <td>${formatDateTimePL(r.scanned_at)}</td>
+            </tr>
+          `).join("")}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+function scanStatusBadge(status) {
+  const s = String(status || "not_scanned");
+  if (s === "ok") return `<span class="badge badgeOk">OK</span>`;
+  if (["wrong", "forced_bad", "duplicate"].includes(s)) return `<span class="badge badgeBad">${escapeHtml(s)}</span>`;
+  return `<span class="badge badgeMuted">BRAK</span>`;
+}
+
+async function clearStationQueue(lineId, lineName) {
+  const choice = await showChoiceModal({
+    title:"🧹 Wyczyścić kolejkę stanowiska?",
+    text:"To usunie aktywne torby z obiegu na wybranym stanowisku.",
+    details:`Stanowisko: <b>${escapeHtml(lineName)}</b><br><br>Używaj tego, gdy kolejka się zacięła albo lider chce zacząć od nowa.`,
+    buttons:[
+      { label:"Anuluj", value:"cancel", className:"btnCancel" },
+      { label:"Wyczyść kolejkę stanowiska", value:"clear", className:"btnReplace" }
+    ]
+  });
+
+  if (choice !== "clear") return;
+
+  setStationStatus("⏳ Czyszczę kolejkę stanowiska...", "info");
+
+  const { data, error } = await supabaseClient.rpc("admin_clear_station_queue", { target_line_id: lineId });
+
+  if (error || data !== "OK") {
+    setStationStatus("❌ Nie udało się wyczyścić kolejki: " + (error?.message || data), "bad");
+    return;
+  }
+
+  setStationStatus("✅ Kolejka stanowiska wyczyszczona.", "ok");
+  await loadStationOverview();
+}
+
+async function closeStationLineAdmin(lineId, lineName) {
+  const choice = await showChoiceModal({
+    title:"🔒 Zamknąć stanowisko?",
+    text:"Stanowisko zostanie oznaczone jako zamknięte i nie powinno być dalej używane przez pracowników.",
+    details:`Stanowisko: <b>${escapeHtml(lineName)}</b>`,
+    buttons:[
+      { label:"Anuluj", value:"cancel", className:"btnCancel" },
+      { label:"Zamknij stanowisko", value:"close", className:"btnReplace" }
+    ]
+  });
+
+  if (choice !== "close") return;
+
+  setStationStatus("⏳ Zamykam stanowisko...", "info");
+
+  const { data, error } = await supabaseClient.rpc("admin_close_station_line", { target_line_id: lineId });
+
+  if (error || data !== "OK") {
+    setStationStatus("❌ Nie udało się zamknąć stanowiska: " + (error?.message || data), "bad");
+    return;
+  }
+
+  setStationStatus("✅ Stanowisko zamknięte.", "ok");
+  await loadStationOverview();
+}
+
+async function clearAllStationQueues() {
+  const choice = await showChoiceModal({
+    title:"🧹 Wyczyścić wszystkie kolejki?",
+    text:"To usunie aktywne torby ze wszystkich stanowisk.",
+    details:"Używaj tylko awaryjnie, np. gdy zmieniacie plan lub system był testowany.",
+    buttons:[
+      { label:"Anuluj", value:"cancel", className:"btnCancel" },
+      { label:"Wyczyść wszystkie kolejki", value:"clear", className:"btnReplace" }
+    ]
+  });
+
+  if (choice !== "clear") return;
+
+  setStationStatus("⏳ Czyszczę wszystkie kolejki...", "info");
+
+  const { data, error } = await supabaseClient.rpc("admin_clear_all_station_queues");
+
+  if (error || data !== "OK") {
+    setStationStatus("❌ Nie udało się wyczyścić kolejek: " + (error?.message || data), "bad");
+    return;
+  }
+
+  setStationStatus("✅ Wszystkie kolejki wyczyszczone.", "ok");
+  await loadStationOverview();
+}
+
+async function closeAllStationLines() {
+  const choice = await showChoiceModal({
+    title:"🔒 Zamknąć wszystkie stanowiska?",
+    text:"Wszystkie aktywne stanowiska zostaną zamknięte.",
+    details:"Pracownicy powinni odświeżyć stronę lub wrócić do wyboru stanowiska.",
+    buttons:[
+      { label:"Anuluj", value:"cancel", className:"btnCancel" },
+      { label:"Zamknij wszystkie stanowiska", value:"close", className:"btnReplace" }
+    ]
+  });
+
+  if (choice !== "close") return;
+
+  setStationStatus("⏳ Zamykam wszystkie stanowiska...", "info");
+
+  const { data, error } = await supabaseClient.rpc("admin_close_all_station_lines");
+
+  if (error || data !== "OK") {
+    setStationStatus("❌ Nie udało się zamknąć stanowisk: " + (error?.message || data), "bad");
+    return;
+  }
+
+  setStationStatus("✅ Wszystkie stanowiska zamknięte.", "ok");
+  await loadStationOverview();
+}
+
+async function loadActiveLogins() {
+  const { data, error } = await supabaseClient.rpc("admin_active_login_locks");
+
+  if (error) {
+    setLoginsStatus("❌ Nie udało się pobrać aktywnych logowań: " + error.message, "bad");
+    renderActiveLogins([]);
+    return;
+  }
+
+  activeLoginsCache = data || [];
+  renderActiveLogins(activeLoginsCache);
+  el("statLogins").innerText = activeLoginsCache.length;
+  setLoginsStatus("✅ Aktywne logowania odświeżone.", "ok");
+}
+
+function renderActiveLogins(rows) {
+  if (!rows.length) {
+    el("activeLoginsTable").innerHTML = `<div style="padding:18px;color:#6b7280;">Brak aktywnych blokad logowania.</div>`;
+    return;
+  }
+
+  el("activeLoginsTable").innerHTML = `
+    <table>
+      <thead>
+        <tr>
+          <th>Użytkownik</th>
+          <th>Tryb</th>
+          <th>Stanowisko</th>
+          <th>Urządzenie</th>
+          <th>Ostatnia aktywność</th>
+          <th>Akcja</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${rows.map((row, index) => `
+          <tr>
+            <td><b>${escapeHtml(displayLogin(row.user_email || "-"))}</b></td>
+            <td>${escapeHtml(row.mode || "-")}</td>
+            <td>${escapeHtml(row.line_name || row.line_id || "-")}</td>
+            <td>${escapeHtml(row.device_id || "-")}</td>
+            <td>${formatDateTimePL(row.last_seen_at || row.updated_at || row.created_at)}</td>
+            <td>
+              <button class="smallBtn danger" onclick="forceLogoutUser(${index})">Wyloguj awaryjnie</button>
+            </td>
+          </tr>
+        `).join("")}
+      </tbody>
+    </table>
+  `;
+}
+
+async function forceLogoutUser(index) {
+  const row = activeLoginsCache[index];
+  if (!row) return;
+
+  const choice = await showChoiceModal({
+    title:"🔐 Wylogować użytkownika awaryjnie?",
+    text:"To zwolni blokadę logowania tego użytkownika. Używaj, gdy konto utknęło jako zalogowane.",
+    details:`Użytkownik: <b>${escapeHtml(row.user_email || "-")}</b><br>Tryb: <b>${escapeHtml(row.mode || "-")}</b><br>Stanowisko: <b>${escapeHtml(row.line_name || row.line_id || "-")}</b>`,
+    buttons:[
+      { label:"Anuluj", value:"cancel", className:"btnCancel" },
+      { label:"Wyloguj awaryjnie", value:"logout", className:"btnReplace" }
+    ]
+  });
+
+  if (choice !== "logout") return;
+
+  setLoginsStatus("⏳ Zwalniam blokadę użytkownika...", "info");
+
+  const { data, error } = await supabaseClient.rpc("admin_force_release_login_lock", {
+    target_user_id: row.user_id
+  });
+
+  if (error || data !== "OK") {
+    setLoginsStatus("❌ Nie udało się wylogować użytkownika: " + (error?.message || data), "bad");
+    return;
+  }
+
+  setLoginsStatus("✅ Użytkownik wylogowany awaryjnie: " + row.user_email, "ok");
+  await loadActiveLogins();
 }
 
 window.addEventListener("DOMContentLoaded", () => {
@@ -1168,6 +1778,9 @@ window.addEventListener("DOMContentLoaded", () => {
   el("setRoleButton").addEventListener("click", setUserRole);
   el("createUserButton").addEventListener("click", createUser);
   el("deleteUserButton").addEventListener("click", deleteUser);
+  el("refreshStationButton").addEventListener("click", refreshAdminData);
+  el("clearAllQueuesButton").addEventListener("click", clearAllStationQueues);
+  el("closeAllLinesButton").addEventListener("click", closeAllStationLines);
 
   el("adminLogin").addEventListener("keydown", e => {
     if (e.key === "Enter") el("adminPassword").focus();
