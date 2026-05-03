@@ -122,6 +122,7 @@ input::placeholder { color:#9ca3af; }
 .loginCard h1 { text-align:center; margin:0; font-size:32px; }
 .loginSubtitle { text-align:center; color:var(--muted); margin-bottom:28px; line-height:1.4; }
 .loginCard label { display:block; font-weight:bold; margin-top:16px; margin-bottom:6px; }
+
 .loginInput, .loginCard input {
   width:100%;
   font-size:22px;
@@ -130,7 +131,9 @@ input::placeholder { color:#9ca3af; }
   border:2px solid #d1d5db;
   box-sizing:border-box;
 }
+
 .loginInput:focus, .loginCard input:focus { outline:none; border-color:#2563eb; }
+
 .loginBtn, #loginButton {
   width:100%;
   margin-top:24px;
@@ -152,6 +155,7 @@ input::placeholder { color:#9ca3af; }
   min-height:50px;
   line-height:1.35;
   font-size:15px;
+  white-space:pre-wrap;
 }
 
 .statusBox.ok { background:var(--green-soft); border-color:#bbf7d0; color:#166534; }
@@ -269,6 +273,7 @@ input::placeholder { color:#9ca3af; }
 }
 
 .formGroup { margin-bottom:16px; }
+
 .formGroup label {
   display:block;
   font-weight:800;
@@ -311,12 +316,6 @@ input::placeholder { color:#9ca3af; }
   display:grid;
   grid-template-columns:minmax(0,1fr) minmax(0,1fr) 230px;
   gap:12px;
-}
-
-.divider {
-  height:1px;
-  background:var(--border);
-  margin:4px 0;
 }
 
 .subPanel {
@@ -484,9 +483,7 @@ tr:last-child td { border-bottom:none; }
   box-shadow:none;
 }
 
-.btnCancel:hover {
-  background:#d1d5db;
-}
+.btnCancel:hover { background:#d1d5db; }
 
 .btnReplace {
   background:#f97316;
@@ -542,10 +539,10 @@ tr:last-child td { border-bottom:none; }
   <p class="loginSubtitle">Zaloguj się, aby zarządzać planem, raportami, użytkownikami i pakowaniem stanowiskowym</p>
 
   <label>Login lub email</label>
-  <input id="adminLogin" class="loginInput" placeholder="np. JanKowalski">
+  <input id="adminLogin" class="loginInput" placeholder="np. JanKowalski" autocomplete="username">
 
   <label>Hasło</label>
-  <input id="adminPassword" class="loginInput" type="password" placeholder="Wpisz hasło">
+  <input id="adminPassword" class="loginInput" type="password" placeholder="Wpisz hasło" autocomplete="current-password">
 
   <button id="loginButton" class="loginBtn">Zaloguj</button>
   <p id="loginStatus" class="statusBox info">Status: gotowy do logowania</p>
@@ -574,7 +571,7 @@ tr:last-child td { border-bottom:none; }
       <div class="sectionHeader">
         <div>
           <h2>📥 Import planu CSV</h2>
-          <div class="sectionHint">Wgraj nowy plan pakowania i ustaw dzień jedzony widoczny w raportach.</div>
+          <div class="sectionHint">Wgraj nowy plan pakowania. Import jest możliwy tylko po wyczyszczeniu poprzedniego dnia.</div>
         </div>
       </div>
 
@@ -590,12 +587,15 @@ tr:last-child td { border-bottom:none; }
             <input type="file" id="fileInput" class="fileInput" accept=".csv,text/csv">
           </div>
 
-          <div class="buttonRow">
-            <button id="uploadButton">⬆️ Wgraj plan</button>
-            <button id="clearPlanButton" class="danger">🧹 Wyczyść plan</button>
+          <button id="uploadButton">⬆️ Wgraj plan</button>
+
+          <div class="adminTip">
+            Format kolumn: QR torby; QR tacki; posiłek; kod; rozmiar; nazwa dania.
+            Każdy wiersz CSV oznacza jedną tackę do spakowania.
           </div>
 
           <p id="uploadStatus" class="statusBox"></p>
+          <p id="operationalStatus" class="statusBox info">Stan danych operacyjnych: nieodświeżony.</p>
         </div>
       </div>
     </section>
@@ -603,15 +603,21 @@ tr:last-child td { border-bottom:none; }
     <section class="adminSection">
       <div class="sectionHeader">
         <div>
-          <h2>📊 Raporty</h2>
-          <div class="sectionHint">Eksportuj raport Excel lub usuń historię zapakowanych toreb.</div>
+          <h2>📊 Raport i reset dnia</h2>
+          <div class="sectionHint">Najpierw pobierz raport, potem wyczyść dane operacyjne i wgraj nowy plan.</div>
         </div>
       </div>
 
       <div class="sectionBody">
         <div class="actionStack">
           <button id="exportReportButton" class="darkBtn">📤 Eksport Excel / Generuj raport</button>
-          <button id="clearSessionsButton" class="warning">🗑️ Wyczyść zapakowane torby / raport</button>
+          <button id="resetDayButton" class="danger">🧹 Zamknij dzień i wyczyść system</button>
+
+          <div class="adminTip">
+            Reset usuwa plan, raport, stanowiska, kolejki, skany, przydziały i aktywne logowania.
+            Zostają użytkownicy, role i struktura systemu.
+          </div>
+
           <p id="sessionsStatus" class="statusBox"></p>
         </div>
       </div>
@@ -641,7 +647,7 @@ tr:last-child td { border-bottom:none; }
               <div class="statValue bad" id="statBadStation">0</div>
             </div>
             <div class="statCard">
-              <div class="statLabel">Zalogowani</div>
+              <div class="statLabel">Aktywne wpisy logowań</div>
               <div class="statValue" id="statLogins">0</div>
             </div>
           </div>
@@ -666,14 +672,14 @@ tr:last-child td { border-bottom:none; }
       <div class="sectionHeader">
         <div>
           <h2>🔐 Aktywne logowania</h2>
-          <div class="sectionHint">Podgląd kto jest zalogowany. Możesz awaryjnie zwolnić blokadę użytkownika.</div>
+          <div class="sectionHint">Po usunięciu blokad logowania ta sekcja jest głównie informacyjna. Możesz nadal awaryjnie usunąć wpis logowania.</div>
         </div>
       </div>
 
       <div class="sectionBody">
         <div class="actionStack">
           <div class="adminTip">
-            Używaj wylogowania awaryjnego tylko gdy pracownik zamknął kartę, zawiesił się komputer albo konto zostało zablokowane przez stare logowanie.
+            System nie blokuje już pracy jednego konta na kilku urządzeniach. Te wpisy służą do podglądu i awaryjnego czyszczenia.
           </div>
           <div id="activeLoginsTable" class="tableWrap"></div>
           <p id="loginsStatus" class="statusBox"></p>
@@ -773,13 +779,16 @@ tr:last-child td { border-bottom:none; }
 
 <script>
 const PROJECT_URL = "https://lanmmbpqxmenyjwvwpkt.supabase.co";
-const PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxhbm1tYnBxeG1lbnlqd3Z3cGt0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzczOTE2MjgsImV4cCI6MjA5Mjk2NzYyOH0.cKZ2Cf1x5Ef-nFQRziVBHn_KJcU6BOCD7B9sD-Vs1uM";
+const PUBLISHABLE_KEY = "sb_publishable_sYrinkI1u2zr9uXZwsERNg_HE0wQKsC";
 const DOMAIN = "@pakowanie.local";
 
 let supabaseClient = null;
 let currentSession = null;
 let activeLinesCache = [];
 let activeLoginsCache = [];
+let operationalSnapshot = null;
+let reportExportedThisSession = false;
+let lastReportExportAt = null;
 
 const el = id => document.getElementById(id);
 
@@ -790,12 +799,27 @@ function setRoleStatus(text, type = "info") { setBox("roleStatus", text, type); 
 function setUserStatus(text, type = "info") { setBox("userStatus", text, type); }
 function setStationStatus(text, type = "info") { setBox("stationStatus", text, type); }
 function setLoginsStatus(text, type = "info") { setBox("loginsStatus", text, type); }
+function setOperationalStatus(text, type = "info") { setBox("operationalStatus", text, type); }
 
 function setBox(id, text, type = "info") {
   const box = el(id);
   if (!box) return;
   box.innerText = text;
   box.className = "statusBox " + type;
+}
+
+function escapeHtml(value) {
+  return String(value ?? "").replace(/[&<>"']/g, m => ({
+    "&":"&amp;",
+    "<":"&lt;",
+    ">":"&gt;",
+    '"':"&quot;",
+    "'":"&#039;"
+  }[m]));
+}
+
+function escapeJs(value) {
+  return String(value ?? "").replace(/\\/g, "\\\\").replace(/'/g, "\\'").replace(/\n/g, "\\n").replace(/\r/g, "");
 }
 
 function showChoiceModal({ title, text, details = "", buttons = [] }) {
@@ -813,7 +837,7 @@ function showChoiceModal({ title, text, details = "", buttons = [] }) {
 
     el("confirmButtons").innerHTML = buttons.map((btn, index) => `
       <button class="modalBtn ${btn.className || "btnAnother"}" data-index="${index}">
-        ${btn.label}
+        ${escapeHtml(btn.label)}
       </button>
     `).join("");
 
@@ -880,16 +904,6 @@ function splitItems(text) {
   return String(text).split("|").map(x => x.trim()).filter(Boolean);
 }
 
-function escapeHtml(value) {
-  return String(value ?? "").replace(/[&<>"']/g, m => ({
-    "&":"&amp;",
-    "<":"&lt;",
-    ">":"&gt;",
-    '"':"&quot;",
-    "'":"&#039;"
-  }[m]));
-}
-
 function translateError(msg) {
   const m = String(msg || "").toLowerCase();
 
@@ -935,7 +949,16 @@ async function adminLogin() {
       return;
     }
 
-    const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password: passwordValue });
+    el("loginButton").disabled = true;
+    el("loginButton").innerText = "Loguję...";
+
+    const { data, error } = await supabaseClient.auth.signInWithPassword({
+      email,
+      password: passwordValue
+    });
+
+    el("loginButton").disabled = false;
+    el("loginButton").innerText = "Zaloguj";
 
     if (error) {
       setLoginStatus("❌ " + translateError(error.message), "bad");
@@ -961,6 +984,11 @@ async function adminLogin() {
 
   } catch (err) {
     setLoginStatus("❌ Błąd techniczny: " + err.message, "bad");
+  } finally {
+    if (el("loginButton")) {
+      el("loginButton").disabled = false;
+      el("loginButton").innerText = "Zaloguj";
+    }
   }
 }
 
@@ -977,7 +1005,8 @@ async function refreshAdminData() {
     loadUsersList(),
     loadMealDate(),
     loadStationOverview(),
-    loadActiveLogins()
+    loadActiveLogins(),
+    loadOperationalStatus()
   ]);
 }
 
@@ -996,6 +1025,61 @@ async function loadUsersList() {
     const email = row.email || "";
     return `<option value="${escapeHtml(email)}"></option>`;
   }).join("");
+}
+
+async function loadOperationalStatus() {
+  const { data, error } = await supabaseClient.rpc("admin_operational_data_status");
+
+  if (error) {
+    setOperationalStatus("❌ Nie udało się pobrać stanu danych operacyjnych: " + error.message, "bad");
+    return null;
+  }
+
+  const row = data && data.length ? data[0] : null;
+  operationalSnapshot = row;
+
+  if (!row) {
+    setOperationalStatus("Brak danych o stanie operacyjnym.", "warn");
+    return null;
+  }
+
+  const total =
+    Number(row.packing_plan_count || 0) +
+    Number(row.packing_sessions_count || 0) +
+    Number(row.station_lines_count || 0) +
+    Number(row.station_bags_count || 0) +
+    Number(row.station_scans_count || 0) +
+    Number(row.tray_scans_count || 0);
+
+  const text =
+    `Plan: ${row.packing_plan_count || 0}\n` +
+    `Raport/sesje: ${row.packing_sessions_count || 0}\n` +
+    `Stanowiska: ${row.station_lines_count || 0}\n` +
+    `Torby stanowiskowe: ${row.station_bags_count || 0}\n` +
+    `Skany stanowiskowe: ${row.station_scans_count || 0}\n` +
+    `Stare tray_scans: ${row.tray_scans_count || 0}`;
+
+  setOperationalStatus(
+    total > 0
+      ? "Dane operacyjne NIE są puste:\n" + text
+      : "Dane operacyjne są puste. Można wgrać nowy plan.",
+    total > 0 ? "warn" : "ok"
+  );
+
+  return row;
+}
+
+function operationalHasData(row) {
+  if (!row) return false;
+
+  return (
+    Number(row.packing_plan_count || 0) > 0 ||
+    Number(row.packing_sessions_count || 0) > 0 ||
+    Number(row.station_lines_count || 0) > 0 ||
+    Number(row.station_bags_count || 0) > 0 ||
+    Number(row.station_scans_count || 0) > 0 ||
+    Number(row.tray_scans_count || 0) > 0
+  );
 }
 
 async function saveMealDate() {
@@ -1027,17 +1111,37 @@ async function loadMealDate() {
 
   if (!error && data && data.value) {
     el("mealDateInput").value = data.value;
+  } else {
+    el("mealDateInput").value = "";
   }
 }
 
-async function getReportData() {
-  const { data: sessions, error } = await supabaseClient
-    .from("packing_sessions")
-    .select("*")
-    .order("closed_at", { ascending:false })
-    .limit(5000);
+async function fetchAllSessions() {
+  const pageSize = 1000;
+  let from = 0;
+  let all = [];
 
-  if (error) throw new Error(error.message);
+  while (true) {
+    const { data, error } = await supabaseClient
+      .from("packing_sessions")
+      .select("*")
+      .order("closed_at", { ascending:false })
+      .range(from, from + pageSize - 1);
+
+    if (error) throw new Error(error.message);
+
+    const rows = data || [];
+    all = all.concat(rows);
+
+    if (rows.length < pageSize) break;
+    from += pageSize;
+  }
+
+  return all;
+}
+
+async function getReportData() {
+  const sessions = await fetchAllSessions();
 
   const { data: bagCount, error: bagCountError } = await supabaseClient.rpc("count_unique_bags");
   if (bagCountError) throw new Error(bagCountError.message);
@@ -1069,6 +1173,7 @@ function setAutoFilter(sheet, range) {
 
 async function exportExcel() {
   setSessionsStatus("⏳ Generuję raport Excel...", "info");
+  el("exportReportButton").disabled = true;
 
   try {
     const report = await getReportData();
@@ -1089,7 +1194,17 @@ async function exportExcel() {
       const worker = displayLogin(x.user_login || "brak użytkownika");
 
       if (!workers[worker]) {
-        workers[worker] = { worker, total:0, correct:0, bad:0, wrong:0, missing:0, duplicates:0, duration:0, durationCount:0 };
+        workers[worker] = {
+          worker,
+          total:0,
+          correct:0,
+          bad:0,
+          wrong:0,
+          missing:0,
+          duplicates:0,
+          duration:0,
+          durationCount:0
+        };
       }
 
       workers[worker].total++;
@@ -1113,7 +1228,17 @@ async function exportExcel() {
         const workerAccuracy = w.total ? Math.round((w.correct / w.total) * 100) : 0;
         const workerAvg = w.durationCount ? Math.round(w.duration / w.durationCount) : 0;
 
-        return [w.worker, w.total, w.correct, w.bad, workerAccuracy + "%", formatDuration(workerAvg), w.missing, w.wrong, w.duplicates];
+        return [
+          w.worker,
+          w.total,
+          w.correct,
+          w.bad,
+          workerAccuracy + "%",
+          formatDuration(workerAvg),
+          w.missing,
+          w.wrong,
+          w.duplicates
+        ];
       });
 
     const historyRows = data.map(x => [
@@ -1150,7 +1275,7 @@ async function exportExcel() {
     ];
 
     const historySheetRows = [
-      ["QR torby", "Status", "Pracownik", "Oczekiwane tacki", "Poprawne tacki", "Czas pakowania", "Brakujące tacki", "Błędne tacki", "Duplikaty", "Wszystkie skany", "Data zamknięcia"],
+      ["QR torby", "Status", "Pracownik / stanowisko", "Oczekiwane tacki", "Poprawne tacki", "Czas pakowania", "Brakujące tacki", "Błędne tacki", "Duplikaty", "Wszystkie skany", "Data zamknięcia"],
       ...historyRows
     ];
 
@@ -1165,7 +1290,7 @@ async function exportExcel() {
     workersSheet["!freeze"] = { xSplit: 0, ySplit: 4 };
 
     const historySheet = sheetFromRows(historySheetRows);
-    setColumnWidths(historySheet, [24, 16, 24, 18, 16, 18, 35, 35, 35, 60, 22]);
+    setColumnWidths(historySheet, [24, 16, 28, 18, 16, 18, 35, 35, 35, 60, 22]);
     setAutoFilter(historySheet, "A1:K1");
     historySheet["!freeze"] = { xSplit: 0, ySplit: 1 };
 
@@ -1176,82 +1301,141 @@ async function exportExcel() {
     const date = new Date().toISOString().slice(0, 10);
     XLSX.writeFile(workbook, `raport_pakowania_${date}.xlsx`);
 
-    setSessionsStatus("✅ Raport Excel wygenerowany.", "ok");
+    reportExportedThisSession = true;
+    lastReportExportAt = new Date();
+
+    setSessionsStatus(
+      `✅ Raport Excel wygenerowany.\nWpisów w raporcie: ${total}\nMożesz teraz wykonać reset dnia.`,
+      "ok"
+    );
+
     return true;
 
   } catch (err) {
     setSessionsStatus("❌ Nie udało się wygenerować raportu: " + err.message, "bad");
     return false;
+  } finally {
+    el("exportReportButton").disabled = false;
   }
 }
 
-async function clearPlan() {
-  const wantsReport = await showChoiceModal({
-    title: "🧹 Wyczyścić plan pakowania?",
-    text: "Przed usunięciem planu możesz pobrać aktualny raport.",
-    details: "Usunięcie planu skasuje listę toreb i tacek do pakowania. Historii raportu nie usuwa ten przycisk.",
-    buttons: [
-      { label:"Anuluj", value:"cancel", className:"btnCancel" },
-      { label:"Wyczyść bez raportu", value:"clear", className:"btnReplace" },
-      { label:"Pobierz raport i wyczyść", value:"report_clear", className:"btnAnother" }
-    ]
-  });
+async function resetDay() {
+  const row = await loadOperationalStatus();
 
-  if (wantsReport === "cancel") return;
-
-  if (wantsReport === "report_clear") {
-    const exported = await exportExcel();
-    if (!exported) return;
+  if (!row || !operationalHasData(row)) {
+    setSessionsStatus("Dane operacyjne są już puste. Nie ma czego resetować.", "warn");
+    return;
   }
 
-  setUploadStatus("⏳ Czyszczę plan...", "info");
+  const sessionsCount = Number(row.packing_sessions_count || 0);
 
-  const { error } = await supabaseClient.from("packing_plan").delete().neq("id", 0);
-
-  if (error) {
-    setUploadStatus("❌ Błąd czyszczenia planu: " + error.message, "bad");
-  } else {
-    setUploadStatus("✅ Plan wyczyszczony.", "ok");
+  if (sessionsCount > 0 && !reportExportedThisSession) {
+    setSessionsStatus(
+      "❌ Najpierw pobierz raport Excel. Reset dnia jest zablokowany, dopóki raport nie zostanie wygenerowany w tej sesji.",
+      "bad"
+    );
+    return;
   }
-}
 
-async function clearSessions() {
   const choice = await showChoiceModal({
-    title: "🗑️ Wyczyścić raport?",
-    text: "To usunie historię zapakowanych toreb z raportu.",
-    details: "Tej operacji nie da się cofnąć. Upewnij się, że raport Excel został pobrany, jeżeli jest potrzebny.",
+    title: "🧹 Zamknąć dzień i wyczyścić system?",
+    text: "To usunie wszystkie dane operacyjne obecnego dnia.",
+    details:
+      `Zostaną usunięte:<br>` +
+      `- plan pakowania<br>` +
+      `- historia pakowania / raport<br>` +
+      `- stanowiska, kolejki, skany i przydziały<br>` +
+      `- wpisy aktywnych logowań<br>` +
+      `- dane tray_scans<br><br>` +
+      `Zostaną użytkownicy, role i struktura systemu.`,
     buttons: [
       { label:"Anuluj", value:"cancel", className:"btnCancel" },
-      { label:"Usuń historię raportu", value:"clear", className:"btnReplace" }
+      { label:"Rozumiem — przejdź dalej", value:"continue", className:"btnReplace" }
     ]
   });
 
-  if (choice !== "clear") return;
+  if (choice !== "continue") return;
 
-  setSessionsStatus("⏳ Czyszczę zapakowane torby / raport...", "info");
+  const typed = window.prompt("Aby potwierdzić reset dnia, wpisz dokładnie: RESET");
 
-  const { error } = await supabaseClient.from("packing_sessions").delete().neq("status", "__never_match__");
-
-  if (error) {
-    setSessionsStatus("❌ Błąd czyszczenia raportu: " + error.message, "bad");
-  } else {
-    setSessionsStatus("✅ Zapakowane torby / raport wyczyszczone.", "ok");
+  if (typed !== "RESET") {
+    setSessionsStatus("⚠️ Reset anulowany. Nie wpisano poprawnie słowa RESET.", "warn");
+    return;
   }
+
+  setSessionsStatus("⏳ Czyszczę dane operacyjne...", "info");
+  el("resetDayButton").disabled = true;
+
+  const { data, error } = await supabaseClient.rpc("admin_reset_operational_data");
+
+  el("resetDayButton").disabled = false;
+
+  if (error || data !== "OK") {
+    setSessionsStatus("❌ Nie udało się wykonać resetu dnia: " + (error?.message || data), "bad");
+    return;
+  }
+
+  reportExportedThisSession = false;
+  lastReportExportAt = null;
+
+  el("fileInput").value = "";
+  el("mealDateInput").value = "";
+
+  setSessionsStatus("✅ Reset dnia wykonany. Możesz wgrać nowy plan CSV.", "ok");
+
+  await refreshAdminData();
+}
+
+function parseCsvLine(line, delimiter = ";") {
+  const result = [];
+  let current = "";
+  let inQuotes = false;
+
+  for (let i = 0; i < line.length; i++) {
+    const char = line[i];
+    const next = line[i + 1];
+
+    if (char === '"' && inQuotes && next === '"') {
+      current += '"';
+      i++;
+      continue;
+    }
+
+    if (char === '"') {
+      inQuotes = !inQuotes;
+      continue;
+    }
+
+    if (char === delimiter && !inQuotes) {
+      result.push(current);
+      current = "";
+      continue;
+    }
+
+    current += char;
+  }
+
+  result.push(current);
+  return result;
+}
+
+function parseCsvText(text) {
+  const clean = String(text || "").replace(/^\uFEFF/, "");
+  const lines = clean.split(/\r?\n/).filter(line => line.trim() !== "");
+
+  if (lines.length < 2) return [];
+
+  return lines.slice(1).map(line => parseCsvLine(line, ";"));
 }
 
 async function upload() {
-  const reportCleared = await showChoiceModal({
-    title: "⬆️ Wgrać nowy plan?",
-    text: "Przed wgraniem nowego planu poprzedni raport powinien być wyczyszczony.",
-    details: "Jeżeli raport nie został wyczyszczony, nowe pakowanie może mieszać się ze starymi wynikami.",
-    buttons: [
-      { label:"Anuluj — raport nie jest wyczyszczony", value:"cancel", className:"btnCancel" },
-      { label:"Tak, raport jest wyczyszczony — kontynuuj", value:"continue", className:"btnAnother" }
-    ]
-  });
+  const statusRow = await loadOperationalStatus();
 
-  if (reportCleared !== "continue") {
-    setUploadStatus("⚠️ Wgrywanie anulowane. Najpierw wyczyść poprzedni raport.", "warn");
+  if (statusRow && operationalHasData(statusRow)) {
+    setUploadStatus(
+      "❌ Nie można wgrać nowego planu, bo stare dane operacyjne nie są wyczyszczone.\nNajpierw pobierz raport i wykonaj reset dnia.",
+      "bad"
+    );
     return;
   }
 
@@ -1266,51 +1450,69 @@ async function upload() {
   }
 
   setUploadStatus("⏳ Czytam plik...", "info");
+  el("uploadButton").disabled = true;
 
-  const text = await file.text();
-  const lines = text.split(/\r?\n/).filter(line => line.trim() !== "");
+  try {
+    const text = await file.text();
+    const rows = parseCsvText(text);
 
-  if (lines.length < 2) {
-    setUploadStatus("❌ Plik jest pusty albo nie ma danych.", "bad");
-    return;
-  }
-
-  const rows = lines.slice(1).map(line => line.split(";"));
-
-  const data = rows.map(r => ({
-    bag_qr: String(r[0] || "").trim(),
-    tray_qr: String(r[1] || "").trim(),
-    meal: String(r[2] || "").trim(),
-    code: String(r[3] || "").trim(),
-    size: String(r[4] || "").trim(),
-    dish_name: String(r[5] || "").trim()
-  })).filter(x => x.bag_qr && x.tray_qr);
-
-  if (!data.length) {
-    setUploadStatus("❌ Nie znaleziono poprawnych wierszy. Sprawdź kolejność kolumn.", "bad");
-    return;
-  }
-
-  setUploadStatus("⏳ Wysyłam dane: " + data.length + " rekordów...", "info");
-
-  const chunkSize = 500;
-  let inserted = 0;
-
-  for (let i = 0; i < data.length; i += chunkSize) {
-    const chunk = data.slice(i, i + chunkSize);
-
-    const { error } = await supabaseClient.from("packing_plan").insert(chunk);
-
-    if (error) {
-      setUploadStatus("❌ Błąd importu po " + inserted + " rekordach: " + error.message, "bad");
+    if (rows.length < 1) {
+      setUploadStatus("❌ Plik jest pusty albo nie ma danych.", "bad");
       return;
     }
 
-    inserted += chunk.length;
-    setUploadStatus("⏳ Wgrano " + inserted + " / " + data.length + "...", "info");
-  }
+    const batchId = crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + "-" + Math.random().toString(16).slice(2);
 
-  setUploadStatus("✅ Plan załadowany: " + inserted + " rekordów. Dzień jedzony: " + formatDatePL(el("mealDateInput").value), "ok");
+    const data = rows.map(r => ({
+      import_batch_id: batchId,
+      bag_qr: String(r[0] || "").trim(),
+      tray_qr: String(r[1] || "").trim(),
+      meal: String(r[2] || "").trim(),
+      code: String(r[3] || "").trim(),
+      size: String(r[4] || "").trim(),
+      dish_name: String(r[5] || "").trim()
+    })).filter(x => x.bag_qr && x.tray_qr);
+
+    if (!data.length) {
+      setUploadStatus("❌ Nie znaleziono poprawnych wierszy. Sprawdź kolejność kolumn.", "bad");
+      return;
+    }
+
+    setUploadStatus("⏳ Wysyłam dane: " + data.length + " rekordów...", "info");
+
+    const chunkSize = 500;
+    let inserted = 0;
+
+    for (let i = 0; i < data.length; i += chunkSize) {
+      const chunk = data.slice(i, i + chunkSize);
+
+      const { error } = await supabaseClient.from("packing_plan").insert(chunk);
+
+      if (error) {
+        setUploadStatus("❌ Błąd importu po " + inserted + " rekordach: " + error.message, "bad");
+        return;
+      }
+
+      inserted += chunk.length;
+      setUploadStatus("⏳ Wgrano " + inserted + " / " + data.length + "...", "info");
+    }
+
+    reportExportedThisSession = false;
+
+    setUploadStatus(
+      "✅ Plan załadowany: " + inserted +
+      " rekordów.\nDzień jedzony: " + formatDatePL(el("mealDateInput").value) +
+      "\nImport batch: " + batchId,
+      "ok"
+    );
+
+    await refreshAdminData();
+
+  } catch (err) {
+    setUploadStatus("❌ Błąd importu: " + err.message, "bad");
+  } finally {
+    el("uploadButton").disabled = false;
+  }
 }
 
 async function setUserRole() {
@@ -1325,7 +1527,10 @@ async function setUserRole() {
 
   setRoleStatus("⏳ Nadaję rolę...", "info");
 
-  const { data, error } = await supabaseClient.rpc("set_user_role_by_email", { user_email: email, new_role: role });
+  const { data, error } = await supabaseClient.rpc("set_user_role_by_email", {
+    user_email: email,
+    new_role: role
+  });
 
   if (error) {
     setRoleStatus("❌ Błąd: " + error.message, "bad");
@@ -1492,8 +1697,8 @@ function renderStationLines(rows) {
               <td>
                 <div style="display:flex;gap:8px;min-width:360px;">
                   <button class="smallBtn lightBtn" onclick="showLineDetails(${index})">Szczegóły</button>
-                  <button class="smallBtn warning" onclick="clearStationQueue('${escapeHtml(line.line_id)}','${escapeHtml(line.line_name || "")}')">Wyczyść kolejkę</button>
-                  <button class="smallBtn danger" onclick="closeStationLineAdmin('${escapeHtml(line.line_id)}','${escapeHtml(line.line_name || "")}')">Zamknij</button>
+                  <button class="smallBtn warning" onclick="clearStationQueue('${escapeJs(line.line_id)}','${escapeJs(line.line_name || "")}')">Wyczyść kolejkę</button>
+                  <button class="smallBtn danger" onclick="closeStationLineAdmin('${escapeJs(line.line_id)}','${escapeJs(line.line_name || "")}')">Zamknij</button>
                 </div>
               </td>
             </tr>
@@ -1518,7 +1723,9 @@ async function showLineDetails(index) {
   el("detailsContent").innerHTML = `<div class="statusBox info">⏳ Pobieram szczegóły stanowiska...</div>`;
   el("detailsModal").classList.remove("hidden");
 
-  const { data, error } = await supabaseClient.rpc("admin_station_line_details", { target_line_id: line.line_id });
+  const { data, error } = await supabaseClient.rpc("admin_station_line_details", {
+    target_line_id: line.line_id
+  });
 
   if (error) {
     el("detailsContent").innerHTML = `<div class="statusBox bad">❌ ${escapeHtml(error.message)}</div>`;
@@ -1550,8 +1757,8 @@ async function showLineDetails(index) {
         </thead>
         <tbody>
           ${rows.map(r => `
-            <tr class="${r.bag_has_error ? "badRow" : ""}">
-              <td>${escapeHtml(r.bag_position ?? "-")}</td>
+            <tr class="${r.has_error ? "badRow" : ""}">
+              <td>${escapeHtml(r.queue_position ?? "-")}</td>
               <td><b>${escapeHtml(r.bag_qr || "-")}</b></td>
               <td>${escapeHtml(r.bag_status || "-")}</td>
               <td>${escapeHtml(r.meal || "-")}</td>
@@ -1578,7 +1785,7 @@ function scanStatusBadge(status) {
 async function clearStationQueue(lineId, lineName) {
   const choice = await showChoiceModal({
     title:"🧹 Wyczyścić kolejkę stanowiska?",
-    text:"To usunie aktywne torby z obiegu na wybranym stanowisku.",
+    text:"To anuluje aktywne torby z obiegu na wybranym stanowisku.",
     details:`Stanowisko: <b>${escapeHtml(lineName)}</b><br><br>Używaj tego, gdy kolejka się zacięła albo lider chce zacząć od nowa.`,
     buttons:[
       { label:"Anuluj", value:"cancel", className:"btnCancel" },
@@ -1590,7 +1797,9 @@ async function clearStationQueue(lineId, lineName) {
 
   setStationStatus("⏳ Czyszczę kolejkę stanowiska...", "info");
 
-  const { data, error } = await supabaseClient.rpc("admin_clear_station_queue", { target_line_id: lineId });
+  const { data, error } = await supabaseClient.rpc("admin_clear_station_queue", {
+    target_line_id: lineId
+  });
 
   if (error || data !== "OK") {
     setStationStatus("❌ Nie udało się wyczyścić kolejki: " + (error?.message || data), "bad");
@@ -1616,7 +1825,9 @@ async function closeStationLineAdmin(lineId, lineName) {
 
   setStationStatus("⏳ Zamykam stanowisko...", "info");
 
-  const { data, error } = await supabaseClient.rpc("admin_close_station_line", { target_line_id: lineId });
+  const { data, error } = await supabaseClient.rpc("admin_close_station_line", {
+    target_line_id: lineId
+  });
 
   if (error || data !== "OK") {
     setStationStatus("❌ Nie udało się zamknąć stanowiska: " + (error?.message || data), "bad");
@@ -1630,7 +1841,7 @@ async function closeStationLineAdmin(lineId, lineName) {
 async function clearAllStationQueues() {
   const choice = await showChoiceModal({
     title:"🧹 Wyczyścić wszystkie kolejki?",
-    text:"To usunie aktywne torby ze wszystkich stanowisk.",
+    text:"To anuluje aktywne torby ze wszystkich stanowisk.",
     details:"Używaj tylko awaryjnie, np. gdy zmieniacie plan lub system był testowany.",
     buttons:[
       { label:"Anuluj", value:"cancel", className:"btnCancel" },
@@ -1691,12 +1902,12 @@ async function loadActiveLogins() {
   activeLoginsCache = data || [];
   renderActiveLogins(activeLoginsCache);
   el("statLogins").innerText = activeLoginsCache.length;
-  setLoginsStatus("✅ Aktywne logowania odświeżone.", "ok");
+  setLoginsStatus("✅ Aktywne wpisy logowań odświeżone.", "ok");
 }
 
 function renderActiveLogins(rows) {
   if (!rows.length) {
-    el("activeLoginsTable").innerHTML = `<div style="padding:18px;color:#6b7280;">Brak aktywnych blokad logowania.</div>`;
+    el("activeLoginsTable").innerHTML = `<div style="padding:18px;color:#6b7280;">Brak aktywnych wpisów logowania.</div>`;
     return;
   }
 
@@ -1707,21 +1918,21 @@ function renderActiveLogins(rows) {
           <th>Użytkownik</th>
           <th>Tryb</th>
           <th>Stanowisko</th>
-          <th>Urządzenie</th>
-          <th>Ostatnia aktywność</th>
+          <th>Utworzono</th>
+          <th>Wygasa</th>
           <th>Akcja</th>
         </tr>
       </thead>
       <tbody>
         ${rows.map((row, index) => `
           <tr>
-            <td><b>${escapeHtml(displayLogin(row.user_email || "-"))}</b></td>
+            <td><b>${escapeHtml(displayLogin(row.user_email || row.user_id || "-"))}</b></td>
             <td>${escapeHtml(row.mode || "-")}</td>
             <td>${escapeHtml(row.line_name || row.line_id || "-")}</td>
-            <td>${escapeHtml(row.device_id || "-")}</td>
-            <td>${formatDateTimePL(row.last_seen_at || row.updated_at || row.created_at)}</td>
+            <td>${formatDateTimePL(row.locked_at)}</td>
+            <td>${formatDateTimePL(row.expires_at)}</td>
             <td>
-              <button class="smallBtn danger" onclick="forceLogoutUser(${index})">Wyloguj awaryjnie</button>
+              <button class="smallBtn danger" onclick="forceLogoutUser(${index})">Usuń wpis</button>
             </td>
           </tr>
         `).join("")}
@@ -1735,29 +1946,29 @@ async function forceLogoutUser(index) {
   if (!row) return;
 
   const choice = await showChoiceModal({
-    title:"🔐 Wylogować użytkownika awaryjnie?",
-    text:"To zwolni blokadę logowania tego użytkownika. Używaj, gdy konto utknęło jako zalogowane.",
-    details:`Użytkownik: <b>${escapeHtml(row.user_email || "-")}</b><br>Tryb: <b>${escapeHtml(row.mode || "-")}</b><br>Stanowisko: <b>${escapeHtml(row.line_name || row.line_id || "-")}</b>`,
+    title:"🔐 Usunąć wpis logowania?",
+    text:"To usunie wpis z tabeli aktywnych logowań. Nie blokuje to już konta na innych urządzeniach.",
+    details:`Użytkownik: <b>${escapeHtml(row.user_email || row.user_id || "-")}</b><br>Tryb: <b>${escapeHtml(row.mode || "-")}</b><br>Stanowisko: <b>${escapeHtml(row.line_name || row.line_id || "-")}</b>`,
     buttons:[
       { label:"Anuluj", value:"cancel", className:"btnCancel" },
-      { label:"Wyloguj awaryjnie", value:"logout", className:"btnReplace" }
+      { label:"Usuń wpis logowania", value:"logout", className:"btnReplace" }
     ]
   });
 
   if (choice !== "logout") return;
 
-  setLoginsStatus("⏳ Zwalniam blokadę użytkownika...", "info");
+  setLoginsStatus("⏳ Usuwam wpis logowania...", "info");
 
   const { data, error } = await supabaseClient.rpc("admin_force_release_login_lock", {
     target_user_id: row.user_id
   });
 
   if (error || data !== "OK") {
-    setLoginsStatus("❌ Nie udało się wylogować użytkownika: " + (error?.message || data), "bad");
+    setLoginsStatus("❌ Nie udało się usunąć wpisu: " + (error?.message || data), "bad");
     return;
   }
 
-  setLoginsStatus("✅ Użytkownik wylogowany awaryjnie: " + row.user_email, "ok");
+  setLoginsStatus("✅ Wpis logowania usunięty: " + (row.user_email || row.user_id), "ok");
   await loadActiveLogins();
 }
 
@@ -1772,9 +1983,8 @@ window.addEventListener("DOMContentLoaded", () => {
 
   el("loginButton").addEventListener("click", adminLogin);
   el("uploadButton").addEventListener("click", upload);
-  el("clearPlanButton").addEventListener("click", clearPlan);
-  el("clearSessionsButton").addEventListener("click", clearSessions);
   el("exportReportButton").addEventListener("click", exportExcel);
+  el("resetDayButton").addEventListener("click", resetDay);
   el("setRoleButton").addEventListener("click", setUserRole);
   el("createUserButton").addEventListener("click", createUser);
   el("deleteUserButton").addEventListener("click", deleteUser);
